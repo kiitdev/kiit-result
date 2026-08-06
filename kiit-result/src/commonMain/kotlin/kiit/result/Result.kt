@@ -24,8 +24,6 @@ import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 import kiit.codes.toException
-import kiit.result.builders.Outcomes
-import kiit.result.builders.Tries
 
 /**
  * Models successes and failures with optional status codes.
@@ -319,7 +317,7 @@ data class Success<out T>(
          * Builds a [Success] with an [Excluded] status — an item that was intentionally left out of
          * an operation rather than failing it (e.g. deduplicated, disqualified, skipped by a filter).
          */
-        fun <T> ignored(value: T, status: Passed.Excluded? = null): Success<T> =
+        fun <T> excluded(value: T, status: Passed.Excluded? = null): Success<T> =
             Success(value, status ?: Excluded.SKIPPED)
     }
 }
@@ -350,7 +348,7 @@ data class Failure<out E>(
     constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
 
     companion object {
-        fun <E> denied(err: E, status: Failed.Restricted? = null): Failure<E> =
+        fun <E> restricted(err: E, status: Failed.Restricted? = null): Failure<E> =
             Failure(err, status ?: Restricted.DENIED)
 
         fun <E> invalid(err: E, status: Failed.Invalid? = null): Failure<E> =

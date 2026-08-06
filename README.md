@@ -27,7 +27,7 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 | 🚀 [Quick start](#-quick-start) | Install the library and see `Outcome`, builders, and conversions |
 | **Reference** | |
 | 🧠 [Core concepts](#-core-concepts) | `Result`/`Success`/`Failure`, the type aliases, and the builders |
-| 🏗️ [Builders](#️-builders) | The status-aware `denied`/`invalid`/`rejected`/`unserved`/`ignored` factories |
+| 🏗️ [Builders](#️-builders) | The status-aware `restricted`/`invalid`/`rejected`/`unserved`/`excluded` factories |
 | 🔁 [Conversions](#-conversions) | `toOutcome()`/`toTry()` and interop with kiit-codes' `StatusException` |
 | **Guidance** | |
 | 🛠️ [Use cases](#️-use-cases) | Where this fits — services, pipelines, validation |
@@ -47,8 +47,8 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 It builds directly on kiit-codes rather than reimplementing status classification:
 
 1. **A monadic `Result<T, E>`** — `map`, `flatMap`/`then`, `fold`, `onSuccess`/`onFailure`, `getOrElse`, and friends, so success/failure handling composes without manual `if`/`else` branching.
-2. **A flexible error type** — the `Failure` branch's error type `E` can be anything: `String`, `Throwable`, [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err`, or your own domain type. Type aliases (`Try<T>`, `Notice` — see below, `Outcome<T>`) cover the common cases.
-3. **Status-aware builders** — `denied`/`invalid`/`rejected`/`unserved`/`ignored` build a `Result` pre-populated with the matching kiit-codes status category, so you rarely construct `Success`/`Failure` by hand.
+2. **A flexible error type** — the `Failure` branch's error type `E` can be anything: `String`, `Throwable`, [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err`, or your own domain type. Type aliases (`Try<T>`, `Option<T>`, `Outcome<T>`) cover the common cases.
+3. **Status-aware builders** — `restricted`/`invalid`/`rejected`/`unserved`/`excluded` build a `Result` pre-populated with the matching kiit-codes status category, so you rarely construct `Success`/`Failure` by hand.
 
 ```kotlin
 val outcome: Outcome<User> = userService.create("alice", "alice@example.com")
@@ -64,7 +64,7 @@ Returning `null` for "not found" loses the reason. Throwing for expected, recove
 
 ## 💡 The idea
 
-**A `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy**, instead of a bespoke or numeric status of its own. `Success` carries a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed` status (`Succeeded`, `Pending`, `Excluded`, `Information`); `Failure` carries a `Failed` status (`Restricted`, `Invalid`, `Rejected`, `Unserved`). Builders map each common case to its matching category, so `denied()` gives you `Restricted.DENIED`, `invalid()` gives you `Invalid.INVALID_VALUE`, and so on — without hand-rolling a status object at every call site.
+**A `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy**, instead of a bespoke or numeric status of its own. `Success` carries a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed` status (`Succeeded`, `Pending`, `Excluded`, `Information`); `Failure` carries a `Failed` status (`Restricted`, `Invalid`, `Rejected`, `Unserved`). Builders map each common case to its matching category, so `restricted()` gives you `Restricted.DENIED`, `invalid()` gives you `Invalid.INVALID_VALUE`, and so on — without hand-rolling a status object at every call site.
 
 ## 🚀 Quick start
 
@@ -84,7 +84,7 @@ dependencies {
 import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.result.Outcome
-import kiit.result.builders.OutcomeBuilder
+import kiit.result.OutcomeBuilder
 
 class UserService : OutcomeBuilder {
     private val users = mutableMapOf<String, User>()
@@ -135,8 +135,7 @@ Failure<E>.status : Failed  (from kiit-codes)
 | **`Success<T>`** | Holds a `value: T` and a `status: Passed`. Defaults to `Succeeded.SUCCESS`. |
 | **`Failure<E>`** | Holds an `error: E` and a `status: Failed`. Defaults to `Unserved.UNEXPECTED`. |
 | **`message`** | `result.status.message` — a convenience accessor on every `Result`. |
-| **`Expect<T, E>`** | Alias for `Result<T, E>`, to avoid colliding with Kotlin's own `Result`. |
-| **`Option<T>`** | `Result<T, Unit>` — for representing a possibly-null value with a status attached. |
+| **`Option<T>`** | `Result<T, Unit>` — the historical role of `Option`/`Maybe` (Rust/Scala/Arrow), reimagined on `Result` so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the discoverable entry points. |
 | **`Try<T>`** | `Result<T, Throwable>` — exception as the error type. |
 | **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
@@ -151,20 +150,30 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 |---|---|---|
 | `success(value)` | `Passed.Succeeded` | `Succeeded.SUCCESS` |
 | `pending(value)` | `Passed.Pending` | `Pending.ACCEPTED` |
-| `ignored(value)` | `Passed.Excluded` | `Excluded.SKIPPED` |
-| `denied(...)` | `Failed.Restricted` | `Restricted.DENIED` |
+| `excluded(value)` | `Passed.Excluded` | `Excluded.SKIPPED` |
+| `restricted(...)` | `Failed.Restricted` | `Restricted.DENIED` |
 | `invalid(...)` | `Failed.Invalid` | `Invalid.INVALID_VALUE` |
 | `conflict(...)` / `rejected(...)` | `Failed.Rejected` | `Rejected.CONFLICT` / `Rejected.RULE_VIOLATION` |
 | `unserved(...)` | `Failed.Unserved` | `Unserved.UNEXPECTED` |
 
-Note that `ignored()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed.Excluded` status, not a failure.
+Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed.Excluded` status, not a failure.
+
+`Options` also adds `some(value)`/`none(...)` on top of the generic builders above — a discoverable `Some`/`None`-style pair for `Option<T>` specifically (see [Core concepts](#-core-concepts)). `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
+
+```kotlin
+import kiit.result.Options
+
+val a = Options.some(42)                    // Option<Int> — present
+val b = Options.none<Int>()                 // Option<Int> — absent, Rejected.NOT_EXISTS
+val c = Options.none<Int>(Rejected.CONFLICT) // Option<Int> — absent, custom status
+```
 
 `Outcomes`/`Options`/`Tries` are the three ready-made `Builder` implementations, one per common error type:
 
 ```kotlin
-import kiit.result.builders.Outcomes
-import kiit.result.builders.Options
-import kiit.result.builders.Tries
+import kiit.result.Outcomes
+import kiit.result.Options
+import kiit.result.Tries
 
 val a = Outcomes.of { riskyCall() }   // Outcome<T>  — catches Throwable, wraps as Err
 val b = Options.of { riskyCall() }    // Option<T>   — catches Throwable, discards detail
@@ -176,7 +185,7 @@ val c = Tries.of { riskyCall() }      // Try<T>      — catches Throwable, re-d
 
 - **`toOutcome()`** — converts any `Result<T, E>` to `Outcome<T>` (`Result<T, Err>`), building an `Err` from whatever the failure held (`String`, `Exception`, or an existing `Err`).
 - **`toTry()`** — converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a [kiit-codes](https://github.com/slatekit/kiit-codes) `StatusException` via `Failed.toException(errors)`, so the exception still carries the original status and error detail.
-- **`Tries.of { ... }`** — the reverse direction: if the block throws a `StatusException` (`RestrictedException`/`InvalidException`/`RejectedException`/`UnservedException`), the resulting `Try` is built with the matching `denied`/`invalid`/`rejected`/`unserved` status instead of a generic failure.
+- **`Tries.of { ... }`** — the reverse direction: if the block throws a `StatusException` (`RestrictedException`/`InvalidException`/`RejectedException`/`UnservedException`), the resulting `Try` is built with the matching `restricted`/`invalid`/`rejected`/`unserved` status instead of a generic failure.
 
 ## 🛠️ Use cases
 

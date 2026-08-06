@@ -10,7 +10,7 @@
  *  </kiit_header>
  */
 
-package kiit.result.builders
+package kiit.result
 
 import kiit.codes.Err
 import kiit.codes.Invalid
@@ -19,9 +19,6 @@ import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.StatusException
 import kiit.codes.Unserved
-import kiit.result.Result
-import kiit.result.Success
-import kiit.result.Try
 
 /**
  * Builds [Result] with [Failure] error type of [Throwable]
@@ -48,7 +45,7 @@ object Tries : TryBuilder {
             val data = f()
             Success(data)
         } catch (e: StatusException.RestrictedException) {
-            Tries.denied(e, e.status as? Restricted)
+            Tries.restricted(e, e.status as? Restricted)
         } catch (e: StatusException.InvalidException) {
             Tries.invalid(e, e.status as? Invalid)
         } catch (e: StatusException.RejectedException) {

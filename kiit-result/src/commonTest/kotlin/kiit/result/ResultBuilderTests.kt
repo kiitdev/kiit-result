@@ -8,8 +8,6 @@ import kiit.codes.Rejected
 import kiit.codes.Restricted
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
-import kiit.result.builders.OutcomeBuilder
-import kiit.result.builders.Outcomes
 import kotlin.test.Test
 
 /**
@@ -38,13 +36,13 @@ class ResultBuilderTests : ResultTestSupport, OutcomeBuilder {
     }
 
     @Test
-    fun can_build_ignored() {
-        // Excluded is a Passed category — an ignored/excluded item is a success, not a failure.
+    fun can_build_excluded() {
+        // Excluded is a Passed category — an excluded item is a success, not a failure.
         val status = Excluded.SKIPPED
-        ensureSuccess(ignored<Int>(), status, null)
-        ensureSuccess(ignored(42), status, 42)
-        ensureSuccess(ignored(42, "skipped-x"), status, 42, "skipped-x")
-        ensureSuccess(ignored(42, status), status, 42)
+        ensureSuccess(excluded<Int>(), status, null)
+        ensureSuccess(excluded(42), status, 42)
+        ensureSuccess(excluded(42, "skipped-x"), status, 42, "skipped-x")
+        ensureSuccess(excluded(42, status), status, 42)
     }
 
     @Test
@@ -57,12 +55,12 @@ class ResultBuilderTests : ResultTestSupport, OutcomeBuilder {
     }
 
     @Test
-    fun can_build_denied() {
+    fun can_build_restricted() {
         val status = Restricted.DENIED
-        ensureFailure(denied<Int>(), status, expectedError = status.message)
-        ensureFailure(denied<Int>("denied-x"), status, expectedError = "denied-x")
-        ensureFailure(denied<Int>(Exception("denied-x")), status, expectedError = "denied-x")
-        ensureFailure(denied<Int>(Err.of("denied-x")), status, expectedError = "denied-x")
+        ensureFailure(restricted<Int>(), status, expectedError = status.message)
+        ensureFailure(restricted<Int>("restricted-x"), status, expectedError = "restricted-x")
+        ensureFailure(restricted<Int>(Exception("restricted-x")), status, expectedError = "restricted-x")
+        ensureFailure(restricted<Int>(Err.of("restricted-x")), status, expectedError = "restricted-x")
     }
 
     @Test

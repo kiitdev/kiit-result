@@ -13,11 +13,11 @@ package kiit.result
 
 import kiit.codes.Err
 
-/**
- * Alias for Result<T,E> to avoid collision with the Kotlin Result type
- */
-
-typealias Expect<T, E> = kiit.result.Result<T, E>
+// Under consideration for the future — not part of the public API yet.
+// /**
+//  * Alias for Result<T,E> to avoid collision with the Kotlin Result type
+//  */
+// typealias Expect<T, E> = kiit.result.Result<T, E>
 
 /**
  * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Unit]

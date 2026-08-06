@@ -10,16 +10,13 @@
  *  </kiit_header>
  */
 
-package kiit.result.builders
+package kiit.result
 
 import kiit.codes.Err
 import kiit.codes.Failed
+import kiit.codes.Rejected
 import kiit.codes.Status
 import kiit.codes.Unserved
-import kiit.result.Failure
-import kiit.result.Option
-import kiit.result.Result
-import kiit.result.Success
 
 /**
  * Builds [Result] with [Failure] error type of [Unit]
@@ -33,7 +30,11 @@ interface OptionsBuilder : Builder<Unit> {
 }
 
 /**
- * Builds [Result] with [Failure] error type of [Unit]
+ * Builds [Result] with [Failure] error type of [Unit]. `Option<T>` intentionally mirrors the
+ * historical role of `Option`/`Maybe` in Rust/Scala/Arrow — standing in for a nullable value — but
+ * built on the same [Result] as everything else here, so absence can carry a [status] explaining
+ * *why* instead of being a bare `None`. [some]/[none] are the discoverable entry points for that;
+ * every other [Builder] method (`success`, `restricted`, etc.) still works identically on `Option`.
  */
 object Options : OptionsBuilder {
     /**
@@ -52,4 +53,19 @@ object Options : OptionsBuilder {
             val status = onError(e)
             Failure(Unit, status)
         }
+
+    /**
+     * Builds a present [Option] — the [Result] equivalent of Rust/Scala's `Some`.
+     */
+    fun <T> some(value: T): Option<T> = success(value)
+
+    /**
+     * Builds an absent [Option] — the [Result] equivalent of Rust/Scala's `None`, with a [status]
+     * explaining why the value is absent (defaults to [Rejected.NOT_EXISTS]).
+     */
+    fun <T> none(): Option<T> = Failure(Unit, Rejected.NOT_EXISTS)
+
+    fun <T> none(msg: String): Option<T> = Failure(Unit, Status.ofStatus(msg, null, Rejected.NOT_EXISTS))
+
+    fun <T> none(status: Failed.Rejected): Option<T> = Failure(Unit, status)
 }

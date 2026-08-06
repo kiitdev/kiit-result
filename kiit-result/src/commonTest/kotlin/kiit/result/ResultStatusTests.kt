@@ -8,7 +8,6 @@ import kiit.codes.Rejected
 import kiit.codes.Restricted
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
-import kiit.result.builders.Outcomes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

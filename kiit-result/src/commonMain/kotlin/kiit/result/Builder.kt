@@ -10,7 +10,7 @@
  *  </kiit_header>
  */
 
-package kiit.result.builders
+package kiit.result
 
 import kiit.codes.Err
 import kiit.codes.Excluded
@@ -23,9 +23,6 @@ import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
-import kiit.result.Failure
-import kiit.result.Result
-import kiit.result.Success
 
 /**
  * Provides convenient ways to build the most common Successes/Failures with
@@ -69,25 +66,25 @@ interface Builder<out E> {
     // An excluded item is modeled as a Success — see kiit-codes' Passed.Excluded. An item that was
     // intentionally left out of an operation (deduplicated, disqualified, skipped by a filter)
     // isn't a failure, so this builds a [Success], not a [Failure].
-    fun <T> ignored(): Result<T?, E> = Success(null, status = Excluded.SKIPPED)
+    fun <T> excluded(): Result<T?, E> = Success(null, status = Excluded.SKIPPED)
 
-    fun <T> ignored(value: T): Result<T, E> = Success(value, Excluded.SKIPPED)
+    fun <T> excluded(value: T): Result<T, E> = Success(value, Excluded.SKIPPED)
 
-    fun <T> ignored(value: T, msg: String): Result<T, E> = Success(value, Status.ofStatus(msg, null, Excluded.SKIPPED))
+    fun <T> excluded(value: T, msg: String): Result<T, E> = Success(value, Status.ofStatus(msg, null, Excluded.SKIPPED))
 
-    fun <T> ignored(value: T, status: Passed.Excluded): Result<T, E> = Success(value, status)
+    fun <T> excluded(value: T, status: Passed.Excluded): Result<T, E> = Success(value, status)
 
-    fun <T> denied(): Result<T, E> = Failure(errorFromStr(null, Restricted.DENIED), Restricted.DENIED)
+    fun <T> restricted(): Result<T, E> = Failure(errorFromStr(null, Restricted.DENIED), Restricted.DENIED)
 
-    fun <T> denied(msg: String): Result<T, E> = Failure(errorFromStr(msg, Restricted.DENIED), Restricted.DENIED)
+    fun <T> restricted(msg: String): Result<T, E> = Failure(errorFromStr(msg, Restricted.DENIED), Restricted.DENIED)
 
-    fun <T> denied(ex: Throwable, status: Failed.Restricted? = null): Result<T, E> =
+    fun <T> restricted(ex: Throwable, status: Failed.Restricted? = null): Result<T, E> =
         Failure(errorFromEx(ex, Restricted.DENIED), status ?: Restricted.DENIED)
 
-    fun <T> denied(err: Err, status: Failed.Restricted? = null): Result<T, E> =
+    fun <T> restricted(err: Err, status: Failed.Restricted? = null): Result<T, E> =
         Failure(errorFromErr(err, Restricted.DENIED), status ?: Restricted.DENIED)
 
-    fun <T> denied(status: Failed.Restricted): Result<T, E> =
+    fun <T> restricted(status: Failed.Restricted): Result<T, E> =
         Failure(errorFromStr(null, get(status, Restricted.DENIED)), status)
 
     fun <T> invalid(): Result<T, E> = Failure(errorFromStr(null, Invalid.INVALID_VALUE), Invalid.INVALID_VALUE)

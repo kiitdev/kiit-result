@@ -4,7 +4,7 @@ import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.codes.Restricted
 import kiit.result.Outcome
-import kiit.result.builders.OutcomeBuilder
+import kiit.result.OutcomeBuilder
 import kiit.result.flatMap
 
 data class User(val id: String, val email: String)
@@ -28,6 +28,6 @@ class UserService : OutcomeBuilder {
 
     fun authorize(id: String, requesterId: String): Outcome<User> =
         fetch(id).flatMap { user ->
-            if (user.id != requesterId) denied(Restricted.UNAUTHORIZED) else success(user)
+            if (user.id != requesterId) restricted(Restricted.UNAUTHORIZED) else success(user)
         }
 }
