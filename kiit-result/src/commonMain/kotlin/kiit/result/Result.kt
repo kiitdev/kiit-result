@@ -21,22 +21,20 @@ import kiit.codes.Unserved
 import kiit.codes.toException
 
 /**
- * Models successes and failures with optional status codes.
- * This is similar to the Result type from languages such as Rust, Swift, Kotlin, Try from Scala.
- *
+ * Models successes and failures with an optional status.
+ * Similar to Result in Rust and Swift, or Try in Scala.
  *
  * DESIGN
- * While similar to other implementations, there are a few major differences
- * 1. Flexible error	: Error type on the Failure branch can be anything, Exception, Err, String.
- * 2. Status Codes      : Logical groups of status codes to categorize errors, from kiit-codes
- * 3. Sensible defaults	: Default Error types, and builders are provided to reduce custom errors / boiler-plate
- *
+ * While similar to other implementations, there are a few major differences:
+ * 1. Flexible error   : Error type on the Failure branch can be anything — Exception, Err, String.
+ * 2. Status taxonomy  : Every branch carries a status from kiit-codes' closed category taxonomy.
+ * 3. Sensible defaults: Builders in `kiit.result.builders` supply a default status per category
+ *                       so routine use rarely needs to construct a [Status] by hand.
  *
  * NOTES:
  * 1. The success value is of type T
- * 2. The failure value if of type E
- * 3. The status is optional and initialized with sensible defaults
- *
+ * 2. The failure value is of type E
+ * 3. The status is optional to specify explicitly — it's always initialized, defaulting per branch
  */
 sealed class Result<out T, out E> {
     /**

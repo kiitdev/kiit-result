@@ -11,10 +11,9 @@ import kiit.codes.Unserved
 import kotlin.test.Test
 
 /**
- * These tests the building/construction of the Result model in simple/advance cases
- * 1. defaults ( no parameters )
- * 2. with message
- * 3. with explicit status
+ * Tests building/constructing a [Result] via the [OutcomeBuilder] methods, in the three shapes
+ * each one supports: defaults (no parameters), with an explicit message, and with an explicit
+ * status.
  */
 class ResultBuilderTests : ResultTestSupport, OutcomeBuilder {
     @Test

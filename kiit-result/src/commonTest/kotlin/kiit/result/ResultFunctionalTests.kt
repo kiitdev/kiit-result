@@ -10,16 +10,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Tests Operations on the Result class which include:
- * 1. map
- * 2. flatMap
- * 3. onSuccess
- * 4. onFailure
- * 5. fold
- *
- * The tests check the operations above on both:
- * 1. Success branch
- * 2. Failure branch
+ * Tests [Result]'s composition operators — `map`, `flatMap`/`then`, `fold`, `onSuccess`/
+ * `onFailure`, `mapError`/`flatMapError`, `transform`, `getOrElse`/`getOrNull`, `exists`,
+ * `contains`, and `inner` — on both the `Success` and `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test

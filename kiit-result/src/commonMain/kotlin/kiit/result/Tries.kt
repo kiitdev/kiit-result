@@ -19,6 +19,7 @@ import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.StatusException
 import kiit.codes.Unserved
+import kiit.result.builders.Builder
 
 /**
  * Builds [Result] with [Failure] error type of [Throwable]

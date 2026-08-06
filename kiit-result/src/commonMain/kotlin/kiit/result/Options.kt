@@ -17,6 +17,7 @@ import kiit.codes.Failed
 import kiit.codes.Rejected
 import kiit.codes.Status
 import kiit.codes.Unserved
+import kiit.result.builders.Builder
 
 /**
  * Builds [Result] with [Failure] error type of [Unit]

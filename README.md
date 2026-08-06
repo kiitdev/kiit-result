@@ -32,6 +32,7 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 | **Guidance** | |
 | 🛠️ [Use cases](#️-use-cases) | Where this fits — services, pipelines, validation |
 | ✅ [When to use this](#-when-to-use-this-and-when-not-to) | Good-fit and not-necessary scenarios |
+| ❓ [FAQ](#-faq) | Design rationale, comparisons to alternatives, adoption, and maturity |
 | **Project** | |
 | 📦 [Requirements](#-requirements) | Supported platforms and dependencies |
 | 🗺️ [Roadmap](#️-roadmap) | Publishing pipelines and CI work planned but not yet done |
@@ -149,6 +150,8 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 - **`PassedBuilder<E>`** — `success`/`pending`/`excluded`, each with 3 overloads: no-arg, `(value, msg: String? = null)`, and `(value, status)`.
 - **`FailedBuilder<E>`** — `restricted`/`invalid`/`rejected`/`unserved`, each with 5 overloads: no-arg, `(msg)`, `(ex, status?)`, `(err, status?)`, `(status)`.
 
+`Builder`/`PassedBuilder`/`FailedBuilder` live in `kiit.result.builders` — they're the extensible machinery you implement (directly, or via `Outcomes`/`Options`/`Tries`), not something most callers import directly. `Outcomes`/`Options`/`Tries` themselves stay in `kiit.result`, alongside `Result`/`Success`/`Failure`, since those are the ready-made, everyday API.
+
 | Builder | Status category | Default |
 |---|---|---|
 | `success(value)` | `Passed.Succeeded` | `Succeeded.SUCCESS` |
@@ -208,6 +211,40 @@ val c = Tries.of { riskyCall() }      // Try<T>      — catches Throwable, re-d
 **Probably not necessary if:**
 1. Exceptions already communicate everything you need, and you don't want the monadic-return-value style.
 2. You only need status classification, not a `Result` wrapper — in which case see [kiit-codes](https://github.com/slatekit/kiit-codes) on its own.
+
+## ❓ FAQ
+
+> **Note:** this FAQ is a first draft, written before the multiplatform export work (`@JsExport`/`@JsName` on both `kiit-codes` and `kiit-result`) is done. The JS/iOS answer below will be revisited once that's complete.
+
+| Question | Answer |
+|---|---|
+| **Philosophy & Design** | |
+| Why not just use Arrow's `Either`/`Validated` or kotlin-result? | Those give you a monad with zero built-in taxonomy — you supply the meaning yourself. kiit-result is the same kind of monad fused to kiit-codes' taxonomy, so you get consistency across a codebase without every team inventing its own status vocabulary. A different bet, not a "better generic Result." |
+| Why does `Success` carry a status too, not just `Failure`? | Most Result types treat success as inert — just a value. Here `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded" instead of flattening them all to `true`. |
+| Why is `E` still fully generic instead of locked to kiit-codes' `Err`? | So `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` rather than needing separate types. The cost is nothing ties `Failure.status` to `Failure.error` at compile time — deliberately accepted, not fixed. |
+| Doesn't decoupling `status` from `error` risk them disagreeing? | Yes, narrowly — only if you bypass the builders or explicitly override `status` against an unrelated `error`. The ergonomic path (`restricted(err)`, etc.) already pairs them correctly by default. |
+| Why two ways to build a value (constructor vs. `Builder<E>`) instead of one? | They serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope; `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or your own class. |
+| **Comparisons & Alternatives** | |
+| How is this different from Kotlin's own `kotlin.Result`? | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
+| Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"? | It's a deliberate lineage, not a misuse — the same historical role as Rust/Scala/Arrow's `Option` (standing in for a nullable value), reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
+| Is this tied to HTTP or web APIs? | No — it's a universal classification usable at any layer (service call, job step, CLI command), validated against HTTP and gRPC as an external sanity check, not derived from either. |
+| **API & Design Details** | |
+| Why is there no `conflict()` builder? | It was just `rejected()` with `Rejected.CONFLICT` as the default status — not its own category. Use `rejected(status = Rejected.CONFLICT)`. |
+| Why did `denied`/`ignored` become `restricted`/`excluded`? | To match kiit-codes' actual category names (`Restricted`, `Excluded`) instead of carrying forward older, inconsistent naming. |
+| Why does `excluded()` build a `Success`, not a `Failure`? | `Excluded` is a `Passed` category in kiit-codes — an intentionally skipped/deduplicated/disqualified item isn't a failure. |
+| Why is `Builder<E>` split into `PassedBuilder`/`FailedBuilder`? | Keeps each interface's surface scoped to one branch — the same reason kiit-codes keeps each category's constants on its own companion rather than one shared object. |
+| Do I have to pick a specific `Status` every time I use a builder? | No — the group builders (`restricted`, `invalid`, `rejected`, `unserved`, and `pending`/`excluded` on the success side) all apply a sensible default when you don't supply one: `restricted()` → `Restricted.DENIED`, `invalid()` → `Invalid.INVALID_VALUE`, `rejected()` → `Rejected.RULE_VIOLATION`, `unserved()` → `Unserved.UNEXPECTED`. You only reach for an explicit status when the default doesn't fit (`restricted(status = Restricted.LOCKED)`) — routine use never requires touching `Status` directly. |
+| Whatever happened to the numeric status code? | Dropped, mirroring kiit-codes' own removal — an earlier version had one and it invited the wrong inference (looks like an HTTP code, isn't). Get a protocol code on demand via `CodesToHttp`/`CodesToGrpc`. |
+| **Adoption in Practice** | |
+| Can I use my own error type and ignore kiit-codes? | Only partially — `E` is generic (use `Throwable`, `String`, your own type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
+| What if my team already has its own status conventions? | Not an overnight replacement — existing statuses can map into the taxonomy incrementally. |
+| Does this actually work on JS and iOS today? | Worth being precise here: kiit-result's production history (see Maturity below) is JVM/Android — it doesn't extend to JS or iOS/Swift, which are new targets with no production history yet, not just "unexercised" versions of something proven. It compiles cleanly on all three targets, but nothing is `@JsExport`ed yet (no typed surface for TS consumers), and iOS lacks `SKIE` for native default-parameter ergonomics. Multiplatform-*designed*, years-proven on JVM/Android, new on JS/iOS. |
+| **The AI Angle** | |
+| Is the "built for AI" angle just marketing? | Same answer as kiit-codes gives, extended to the `Result` layer: the design choices are justified on ordinary engineering grounds first — exhaustive branching, a small fixed vocabulary, fewer decisions per call site. AI tooling benefits from the same properties any consistent codebase does, but the library stands on its own without that framing. |
+| What's the actual theory? | A closed `Success`/`Failure` split with a fixed, named-category vocabulary (`restricted`/`invalid`/`rejected`/`unserved`/`excluded`) gives an AI generating or reading code a small, predictable set of shapes to reach for, instead of guessing at ad hoc exception types or boolean flags per call site — and Kotlin's compiler-enforced exhaustive `when` over `Success`/`Failure` means a branch can't be silently missed, by a human or a model. Better accuracy, searchability, and standardization across a codebase are the claimed benefits — not proven, and intentionally modest about that, same as kiit-codes. |
+| **Maturity & Trust** | |
+| Is this production-ready at 0.1.0? | The 0.1.0 version reflects the *standalone repo's* age, not the design's — this `Result<T, E>` pattern, paired with a status taxonomy, has been running in production for years across both mobile and server applications inside the original kiit framework. What's actually new: extraction into an independent repo, decoupled from the kiit monorepo; an updated and polished taxonomy in kiit-codes (the category renames happened during this extraction); and, notably, `kiit-codes` and `kiit-result` are now fully decoupled from each other where they were previously coupled in one module. The multiplatform export work is the one piece that's genuinely in progress, not battle-tested. |
+| What about single-maintainer risk? | Real, worth being upfront about — Apache 2.0, source available, no second maintainer or organizational backing yet. |
 
 ## 📦 Requirements
 

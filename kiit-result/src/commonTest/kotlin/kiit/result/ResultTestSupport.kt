@@ -4,7 +4,14 @@ import kiit.codes.Err
 import kiit.codes.Status
 import kotlin.test.assertEquals
 
+/**
+ * Shared assertion helpers for asserting on an [Outcome] (`Result<T, Err>`) in tests.
+ */
 interface ResultTestSupport {
+    /**
+     * Asserts [result] is a [Success] holding [expectedValue], with a status matching
+     * [expectedStatus] (or [expectedMessage], if the message was overridden from the default).
+     */
     fun <T> ensureSuccess(
         result: Result<T, Err>,
         expectedStatus: Status,
@@ -20,6 +27,11 @@ interface ResultTestSupport {
         }
     }
 
+    /**
+     * Asserts [result] is a [Failure] with a status matching [expectedStatus] (or
+     * [expectedStatusMsg], if the message was overridden), and an error value matching
+     * [expectedError] — either directly (`String`) or via [Err.ErrorInfo.msg].
+     */
     fun <T> ensureFailure(
         result: Result<T, *>,
         expectedStatus: Status,

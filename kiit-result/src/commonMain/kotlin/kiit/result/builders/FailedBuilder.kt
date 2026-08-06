@@ -10,7 +10,7 @@
  *  </kiit_header>
  */
 
-package kiit.result
+package kiit.result.builders
 
 import kiit.codes.Err
 import kiit.codes.Failed
@@ -19,6 +19,8 @@ import kiit.codes.Rejected
 import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.Unserved
+import kiit.result.Failure
+import kiit.result.Result
 
 /**
  * Builder methods for the [Failed] side of the taxonomy — restricted/invalid/rejected/unserved.
@@ -36,7 +38,7 @@ interface FailedBuilder<out E> {
     fun errorFromStr(msg: String?, defaultStatus: Status): E
 
     /**
-     * Build the error type [E] from a [Err]
+     * Build the error type [E] from an [Err]
      */
     fun errorFromErr(err: Err, defaultStatus: Status): E
 
