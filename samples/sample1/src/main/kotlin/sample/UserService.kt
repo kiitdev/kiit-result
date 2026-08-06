@@ -18,7 +18,7 @@ class UserService : OutcomeBuilder {
 
     fun create(id: String, email: String): Outcome<User> {
         if (email.isBlank()) return invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return conflict(Rejected.CONFLICT)
+        if (users.containsKey(id)) return rejected(Rejected.CONFLICT)
         val user = User(id, email)
         users[id] = user
         return success(user)
