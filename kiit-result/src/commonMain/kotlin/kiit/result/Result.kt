@@ -13,13 +13,8 @@
 package kiit.result
 
 import kiit.codes.Err
-import kiit.codes.Excluded
 import kiit.codes.Failed
-import kiit.codes.Invalid
 import kiit.codes.Passed
-import kiit.codes.Pending
-import kiit.codes.Rejected
-import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
@@ -308,18 +303,6 @@ data class Success<out T>(
      * @param msg : Optional message for the status
      */
     constructor(value: T, msg: String) : this(value, Status.ofStatus(msg, null, Succeeded.SUCCESS))
-
-    companion object {
-        fun <T> pending(value: T, status: Passed.Pending? = null): Success<T> =
-            Success(value, status ?: Pending.ACCEPTED)
-
-        /**
-         * Builds a [Success] with an [Excluded] status — an item that was intentionally left out of
-         * an operation rather than failing it (e.g. deduplicated, disqualified, skipped by a filter).
-         */
-        fun <T> excluded(value: T, status: Passed.Excluded? = null): Success<T> =
-            Success(value, status ?: Excluded.SKIPPED)
-    }
 }
 
 /**
@@ -346,20 +329,6 @@ data class Failure<out E>(
      * @param msg : Optional message for the status
      */
     constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
-
-    companion object {
-        fun <E> restricted(err: E, status: Failed.Restricted? = null): Failure<E> =
-            Failure(err, status ?: Restricted.DENIED)
-
-        fun <E> invalid(err: E, status: Failed.Invalid? = null): Failure<E> =
-            Failure(err, status ?: Invalid.INVALID_VALUE)
-
-        fun <E> rejected(err: E, status: Failed.Rejected? = null): Failure<E> =
-            Failure(err, status ?: Rejected.RULE_VIOLATION)
-
-        fun <E> unserved(err: E, status: Failed.Unserved? = null): Failure<E> =
-            Failure(err, status ?: Unserved.UNEXPECTED)
-    }
 }
 
 /**

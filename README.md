@@ -91,7 +91,7 @@ class UserService : OutcomeBuilder {
 
     fun create(id: String, email: String): Outcome<User> {
         if (email.isBlank()) return invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return conflict(Rejected.CONFLICT)
+        if (users.containsKey(id)) return rejected(Rejected.CONFLICT)
         val user = User(id, email)
         users[id] = user
         return success(user)
@@ -144,7 +144,10 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 
 ## 🏗️ Builders
 
-`Builder<E>` (and its `Outcomes`/`Options`/`Tries` implementations) provides status-aware factory methods so you rarely build `Success`/`Failure` directly:
+`Builder<E>` provides status-aware factory methods so you rarely build `Success`/`Failure` directly. It's composed from two smaller interfaces, one per branch, so each stays scoped to its own category constants (the same reason kiit-codes keeps `Succeeded`/`Restricted`/etc. constants on their own companions rather than one shared object):
+
+- **`PassedBuilder<E>`** — `success`/`pending`/`excluded`, each with 3 overloads: no-arg, `(value, msg: String? = null)`, and `(value, status)`.
+- **`FailedBuilder<E>`** — `restricted`/`invalid`/`rejected`/`unserved`, each with 5 overloads: no-arg, `(msg)`, `(ex, status?)`, `(err, status?)`, `(status)`.
 
 | Builder | Status category | Default |
 |---|---|---|
@@ -153,10 +156,10 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 | `excluded(value)` | `Passed.Excluded` | `Excluded.SKIPPED` |
 | `restricted(...)` | `Failed.Restricted` | `Restricted.DENIED` |
 | `invalid(...)` | `Failed.Invalid` | `Invalid.INVALID_VALUE` |
-| `conflict(...)` / `rejected(...)` | `Failed.Rejected` | `Rejected.CONFLICT` / `Rejected.RULE_VIOLATION` |
+| `rejected(...)` | `Failed.Rejected` | `Rejected.RULE_VIOLATION` |
 | `unserved(...)` | `Failed.Unserved` | `Unserved.UNEXPECTED` |
 
-Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed.Excluded` status, not a failure.
+Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed.Excluded` status, not a failure. There's no separate `conflict()` — it's `rejected(status = Rejected.CONFLICT)`, since a conflict is just a specific `Rejected` outcome, not its own category.
 
 `Options` also adds `some(value)`/`none(...)` on top of the generic builders above — a discoverable `Some`/`None`-style pair for `Option<T>` specifically (see [Core concepts](#-core-concepts)). `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
 
