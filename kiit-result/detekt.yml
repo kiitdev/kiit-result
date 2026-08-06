@@ -1,0 +1,29 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+style:
+  MagicNumber:
+    active: false        # status code integers are named constants, not magic numbers
+  MaxLineLength:
+    maxLineLength: 120
+  WildcardImport:
+    active: true
+  ReturnCount:
+    max: 6               # guard-clause early returns are idiomatic; default of 2 is too strict
+  ForbiddenComment:
+    active: false        # TODOs in KDoc are used as design notes, not untracked work
+
+complexity:
+  TooManyFunctions:
+    active: false        # Result's combinator surface and Builder's per-status-category
+                          # factories are deliberately broad — this is the public API surface,
+                          # not a design smell to shrink
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: false        # Outcomes/Options/Tries.of() exist specifically to catch any Throwable
+                          # and convert it into a typed Result — that's the whole point

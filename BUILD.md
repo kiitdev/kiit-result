@@ -1,0 +1,264 @@
+# kiit-result — Build & Publish Guide
+
+All Gradle commands below are run from the **repository root**.
+
+---
+
+## Install
+
+### Prerequisites
+
+| Tool | Version | Notes |
+|------|---------|-------|
+| JDK  | 17+     | `java -version` to verify |
+| Android SDK | any | Required for `androidTarget` compilation |
+| GPG  | 2.x     | `gpg --version`; must have the dev.kiit secret key imported |
+
+Import the signing key if not already present:
+```bash
+gpg --import dev.kiit.seckey.asc
+# Verify
+gpg --list-secret-keys --keyid-format LONG
+```
+
+> **Why this import step matters:** `kiit-result/build.gradle.kts`'s `signing { useGpgCmd() }` doesn't
+> reference `dev.kiit.seckey.asc` (or any file) directly — it tells Gradle's signing plugin to shell
+> out to the external `gpg` binary on your `PATH` instead of using its default in-memory PGP
+> implementation. That external `gpg` process reads from your local keyring (`~/.gnupg/`) and
+> selects/unlocks the key via the `signing.gnupg.keyName` / `signing.gnupg.passphrase` properties
+> (see [Setup](#setup) below). So the import above is what actually makes the key available —
+> Gradle itself never touches the raw key material. This is also why `useGpgCmd()` is required
+> instead of `useInMemoryPgpKeys` — see the ["Could not read PGP secret key"](#could-not-read-pgp-secret-key) FAQ entry.
+
+---
+
+## Setup
+
+Choose **one** of the two approaches below. Both are equivalent — pick whichever fits your workflow.
+
+### Option A — `~/.gradle/gradle.properties` (recommended for local dev)
+
+Add the following to `~/.gradle/gradle.properties` (create the file if it does not exist):
+
+```properties
+# Maven Central credentials (portal token — not your account password)
+mavenCentralUsername=<portal-token-username>
+mavenCentralPassword=<portal-token-password>
+
+# GPG signing via system keyring
+signing.gnupg.keyName=<full-key-id>
+signing.gnupg.passphrase=<passphrase>
+```
+
+With this in place, publishing commands need no extra flags:
+```bash
+./gradlew :kiit-result:publishAndReleaseToMavenCentral
+```
+
+### Option B — Shell environment variables (recommended for CI / scripted runs)
+
+Export these variables in your shell profile (e.g. `~/.zshrc`) or in your CI secrets:
+
+| Shell variable      | Gradle property             |
+|---------------------|-----------------------------|
+| `KIIT_MAVEN_USER`   | `mavenCentralUsername`      |
+| `KIIT_MAVEN_PSWD`   | `mavenCentralPassword`      |
+| `KIIT_MAVEN_GPGNAME`| `signing.gnupg.keyName`     |
+| `KIIT_MAVEN_GPGPASS`| `signing.gnupg.passphrase`  |
+
+Pass them as `-P` flags because dots in the property names are not valid bash variable names:
+
+```bash
+./gradlew :kiit-result:publishAndReleaseToMavenCentral \
+    -Psigning.gnupg.keyName=$KIIT_MAVEN_GPGNAME \
+    -Psigning.gnupg.passphrase=$KIIT_MAVEN_GPGPASS \
+    -PmavenCentralUsername=$KIIT_MAVEN_USER \
+    -PmavenCentralPassword=$KIIT_MAVEN_PSWD
+```
+
+---
+
+## CI — GitHub Actions
+
+Two workflows live under [`.github/workflows`](.github/workflows):
+
+| Workflow | File | Trigger | What it does |
+|----------|------|---------|---------------|
+| CI | `ci.yml` | Every PR into `main` | `ktlintCheck`, `detekt`, `jvmTest`, `jsNodeTest` on `ubuntu-latest`. iOS tests are not run in CI (no macOS runner). |
+| Release | `release.yml` | Manual (`workflow_dispatch`) | Builds, tests, publishes to Maven Central, tags, and cuts a GitHub release. Runs on `macos-latest` — required to build/sign the iOS targets. |
+
+CI runners are ephemeral — there is no persistent GPG keyring. The secret key must be imported at the start of every release run.
+
+### 1. Repository secrets
+
+Add these five secrets under `Settings → Secrets and variables → Actions`:
+
+| Secret name           | Value |
+|-----------------------|-------|
+| `KIIT_GPG_SECRET_KEY` | Base64-encoded GPG secret key (see below) |
+| `KIIT_MAVEN_GPGNAME`  | GPG key ID |
+| `KIIT_MAVEN_GPGPASS`  | GPG passphrase |
+| `KIIT_MAVEN_USER`     | Maven Central portal token username |
+| `KIIT_MAVEN_PSWD`     | Maven Central portal token password |
+
+Encode your secret key for the `KIIT_GPG_SECRET_KEY` secret (run locally):
+```bash
+gpg --armor --export-secret-keys <your-key-id> | base64 | pbcopy
+```
+
+### 2. Cutting a release
+
+Releases are **not** triggered by pushing a tag — `release.yml` creates the tag itself, from the
+version already in Gradle:
+
+1. Bump `libraryVersion` in [`kiit-result/build.gradle.kts`](kiit-result/build.gradle.kts) (see the
+   FAQ entry below) and merge that change to `main`.
+2. From the GitHub Actions tab, run the **Release** workflow (`workflow_dispatch`, no inputs).
+3. It reads the version via `./gradlew :kiit-result:printVersion`, verifies a tag for that version
+   doesn't already exist, runs the same lint/test gate as CI, publishes to Maven Central, then
+   pushes tag `v<version>` and creates a GitHub release with auto-generated notes
+   (`gh release create --generate-notes`) covering everything since the previous release.
+
+A failed publish never leaves behind a tag or a release — tagging and the GitHub release both
+happen only after `publishAndReleaseToMavenCentral` succeeds.
+
+### 3. GPG pinentry (if import or signing hangs / fails)
+
+Headless runners have no terminal, so anything that makes `gpg-agent` try to spawn an interactive
+or GUI pinentry (a prompt for a passphrase, or to protect newly-imported secret key material)
+fails outright — on macOS this shows up as `error sending to agent: Inappropriate ioctl for
+device` during import; on Linux it more often just hangs. `release.yml`'s "Import GPG key" step
+already works around this (forces loopback pinentry mode before importing):
+
+```bash
+mkdir -p ~/.gnupg
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+gpgconf --kill gpg-agent
+gpg --batch --yes --pinentry-mode loopback --import ...
+```
+
+If you hit the same class of error locally (not in CI), add the equivalent to `~/.gnupg/gpg.conf` and `~/.gnupg/gpg-agent.conf`:
+
+```bash
+echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+gpgconf --kill gpg-agent
+```
+
+Gradle itself already passes `--batch --pinentry-mode loopback` automatically when it shells out to `gpg` for signing, so this is normally only needed for the raw `gpg --import` step, not the actual signing step.
+
+---
+
+## Build
+
+```bash
+# Stop the Gradle daemon (useful after changing env vars or upgrading Gradle)
+./gradlew --stop
+
+# Clean build outputs
+./gradlew :kiit-result:clean
+
+# Compile all targets (JVM, Android, JS, iOS)
+./gradlew :kiit-result:build
+
+# Compile only — no tests
+./gradlew :kiit-result:assemble
+
+# Run the sample app
+./gradlew :samples:sample1:run
+```
+
+---
+
+## Test (local)
+
+```bash
+# JVM tests (fastest — runs on the local JVM)
+./gradlew :kiit-result:jvmTest
+
+# All platform tests
+./gradlew :kiit-result:allTests
+
+# Publish to Maven Local (~/.m2) for integration testing against other modules
+./gradlew :kiit-result:publishToMavenLocal
+```
+
+Maven Local artifacts are saved to:
+```
+~/.m2/repository/dev/kiit/kiit-result/
+```
+
+---
+
+## Publish
+
+Published artifacts (once a version has actually gone through `publishAndReleaseToMavenCentral`):
+[central.sonatype.com/artifact/dev.kiit/kiit-result](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
+
+### Publish to Maven Local
+
+No credentials required.
+
+```bash
+./gradlew :kiit-result:publishToMavenLocal
+```
+
+### Publish to Maven Central — Option A (gradle.properties)
+
+Requires `~/.gradle/gradle.properties` populated per the Setup section above.
+
+```bash
+./gradlew :kiit-result:publishAndReleaseToMavenCentral
+```
+
+### Publish to Maven Central — Option B (env vars)
+
+```bash
+./gradlew :kiit-result:publishAndReleaseToMavenCentral \
+    -Psigning.gnupg.keyName=$KIIT_MAVEN_GPGNAME \
+    -Psigning.gnupg.passphrase=$KIIT_MAVEN_GPGPASS \
+    -PmavenCentralUsername=$KIIT_MAVEN_USER \
+    -PmavenCentralPassword=$KIIT_MAVEN_PSWD
+```
+
+### Sign artifacts only (dry-run check)
+
+```bash
+./gradlew :kiit-result:signKotlinMultiplatformPublication
+```
+
+---
+
+## FAQ
+
+### "Cannot perform signing task — has no configured signatory"
+
+The signing plugin could not find the key. Check in order:
+
+1. Verify the key is in the GPG keyring:
+   ```bash
+   gpg --list-secret-keys --keyid-format LONG
+   ```
+2. Confirm `signing.gnupg.keyName` matches the full key ID shown above.
+3. If using `~/.gradle/gradle.properties`, make sure the file is saved and the Gradle daemon is restarted (`./gradlew --stop`).
+4. Do **not** use `signAllPublications()` inside `mavenPublishing {}` — it uses `providers.gradleProperty` internally which does not reliably read `~/.gradle/gradle.properties` (Gradle issue #23572). Use the `signing {}` block directly with `useGpgCmd()`.
+
+### "GPG prompts for the wrong key's passphrase"
+
+`signing.gnupg.keyName` is pointing at the wrong key ID. Run `gpg --list-secret-keys --keyid-format LONG`, find the `dev.kiit` key, and update the property to its full fingerprint.
+
+### "Could not read PGP secret key"
+
+Do not use in-memory key signing (`useInMemoryPgpKeys`). The stripped base64 format is fragile and Bouncycastle can silently produce a null signatory. Use `useGpgCmd()` instead.
+
+### Maven Central portal returns 401
+
+The `mavenCentralUsername` and `mavenCentralPassword` are **portal token** credentials, not your account login. Generate a token at [central.sonatype.com](https://central.sonatype.com) under Account → Generate User Token.
+
+### How do I bump the version?
+
+Edit the `libraryVersion` val near the top of the `mavenPublishing {}` block in `kiit-result/build.gradle.kts`:
+```kotlin
+val libraryVersion = "0.1.0"   // ← bump here
+```
+This single value feeds both the published Maven coordinates and the `printVersion` task the release workflow reads to tag and name the GitHub release — see [CI — GitHub Actions](#ci--github-actions) above.
