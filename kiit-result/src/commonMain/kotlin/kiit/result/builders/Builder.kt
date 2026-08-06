@@ -10,13 +10,14 @@
  *  </kiit_header>
  */
 
-package kiit.result
+package kiit.result.builders
 
 import kiit.codes.Err
 import kiit.codes.Failed
 import kiit.codes.Passed
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
+import kiit.result.Result
 
 /**
  * Provides convenient ways to build the most common Successes/Failures with

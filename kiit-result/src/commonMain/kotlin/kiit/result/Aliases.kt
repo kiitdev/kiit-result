@@ -20,40 +20,29 @@ import kiit.codes.Err
 // typealias Expect<T, E> = kiit.result.Result<T, E>
 
 /**
- * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Unit]
- *
- * This allows for :
- * 1. Representing null using Option
- * 2. Allows for mapping Option<T> to Outcome<T>
- * 3. Can provide additional info on why something is null via status
+ * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Unit] — for
+ * representing a value that may be absent, with a status explaining why. See [Options] for the
+ * `some`/`none` entry points and the full design rationale.
  */
 typealias Option<T> = Result<T, Unit>
 
 /**
- * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Exception]
- *
- * This allows for :
- * 1. slightly easier usage by only requiring 1 type parameter
- * 2. avoid collision with the Kotlin Result type
- * 3. similarity to Try type available in other languages like Scala
+ * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Throwable] — the
+ * exception-as-error case, similar in spirit to Scala's `Try`. See [Tries] for the matching
+ * builder, and [Result.toTry]/[Result.toOutcome] for converting to and from other aliases.
  */
 typealias Try<T> = Result<T, Throwable>
 
 /**
- * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Err] interface
- *
- * This allows for :
- * 1. slightly easier usage by only requiring 1 type parameter
- * 2. avoid collision with the Kotlin Result type
- * 3. allows for using the sensible default implementations for [Err]
+ * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Err] — the most
+ * commonly used alias, since [Err] is kiit-codes' own error representation. See [Outcomes] for
+ * the matching builder.
  */
 typealias Outcome<T> = Result<T, Err>
 
 /**
- * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Err.ErrorList]
- *
- * This allows for :
- * 1. Is to be used for validation purposes
- * 2. Collecting multiple errors
+ * Alias for Result<T,E> defaulting the E error type ( [Failure] branch ) to [Err.ErrorList] — for
+ * validation, where multiple errors need to be collected and reported together rather than
+ * stopping at the first one.
  */
 typealias Validated<T> = Result<T, Err.ErrorList>

@@ -10,13 +10,15 @@
  *  </kiit_header>
  */
 
-package kiit.result
+package kiit.result.builders
 
 import kiit.codes.Excluded
 import kiit.codes.Passed
 import kiit.codes.Pending
 import kiit.codes.Status
 import kiit.codes.Succeeded
+import kiit.result.Result
+import kiit.result.Success
 
 /**
  * Builder methods for the [Passed] side of the taxonomy — success/pending/excluded. Kept separate

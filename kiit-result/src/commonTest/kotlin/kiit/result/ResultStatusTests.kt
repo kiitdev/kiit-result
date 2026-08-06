@@ -21,7 +21,7 @@ class ResultStatusTests : ResultTestSupport {
     fun can_test_success() {
         assertEquals(true, Succeeded.SUCCESS.success)
         assertEquals(true, Pending.ACCEPTED.success)
-        // Excluded is a Passed category — an ignored/excluded item is still a success.
+        // Excluded is a Passed category — an excluded item is still a success.
         assertEquals(true, Excluded.SKIPPED.success)
         assertEquals(false, Invalid.BAD_REQUEST.success)
         assertEquals(false, Restricted.UNAUTHENTICATED.success)

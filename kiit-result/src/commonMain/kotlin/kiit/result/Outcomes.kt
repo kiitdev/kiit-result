@@ -14,6 +14,7 @@ package kiit.result
 
 import kiit.codes.Err
 import kiit.codes.Status
+import kiit.result.builders.Builder
 
 /**
  * Builds [Result] with [Failure] error type of [Err]
@@ -31,7 +32,7 @@ interface OutcomeBuilder : Builder<Err> {
  */
 object Outcomes : OutcomeBuilder {
     /**
-     * Build a Outcome<T> ( type alias ) for Result<T,Err> using the supplied function
+     * Build an Outcome<T> ( type alias ) for Result<T,Err> using the supplied function
      */
     inline fun <T> of(f: () -> T): Outcome<T> = build(f, { ex -> Err.ex(ex) })
 
