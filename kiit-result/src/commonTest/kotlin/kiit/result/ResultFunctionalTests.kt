@@ -3,9 +3,8 @@ package kiit.result
 import kiit.codes.Err
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
-import kiit.result.builders.Outcomes
-import kiit.result.builders.Outcomes.success
-import kiit.result.builders.Outcomes.unserved
+import kiit.result.Outcomes.success
+import kiit.result.Outcomes.unserved
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

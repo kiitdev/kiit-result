@@ -10,14 +10,10 @@
  *  </kiit_header>
  */
 
-package kiit.result.builders
+package kiit.result
 
 import kiit.codes.Err
 import kiit.codes.Status
-import kiit.result.Failure
-import kiit.result.Outcome
-import kiit.result.Result
-import kiit.result.Success
 
 /**
  * Builds [Result] with [Failure] error type of [Err]
