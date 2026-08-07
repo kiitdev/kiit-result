@@ -66,6 +66,8 @@ outcome.fold(
 )
 ```
 
+![Codes tiers](assets/kiit-result.png)
+
 ## 🧩 The problem
 
 Returning `null` for "not found" loses the reason. Throwing for expected, recoverable failures (validation, a conflict, an unauthorized caller) is expensive and easy to over- or under-catch. And once you *do* return a status/error pair by convention, every caller ends up re-deriving the same success/failure branching logic by hand.
