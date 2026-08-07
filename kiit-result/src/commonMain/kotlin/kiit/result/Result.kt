@@ -44,6 +44,12 @@ sealed class Result<out T, out E> {
     abstract val status: Status
 
     /**
+     * Optional [Action] describing the operation that produced/wrapped this result.
+     * Absent (null) unless explicitly attached via [withAction].
+     */
+    abstract val action: Action?
+
+    /**
      * These are here for convenience both internally and externally
      */
     val success: Boolean get() = this is Success
@@ -62,7 +68,7 @@ sealed class Result<out T, out E> {
      */
     inline fun <T2> map(f: (T) -> T2): Result<T2, E> =
         when (this) {
-            is Success -> Success(f(this.value), this.status)
+            is Success -> Success(f(this.value), this.status, this.action)
             is Failure -> this
         }
 
@@ -80,7 +86,7 @@ sealed class Result<out T, out E> {
     inline fun <E2> mapError(f: (E) -> E2): Result<T, E2> =
         when (this) {
             is Success -> this
-            is Failure -> Failure(f(this.error), this.status)
+            is Failure -> Failure(f(this.error), this.status, this.action)
         }
 
     /**
@@ -241,8 +247,8 @@ sealed class Result<out T, out E> {
                         else -> Err.obj(error)
                     }
                 when (retainStatus) {
-                    false -> Failure(err)
-                    true -> Failure(err, this.status)
+                    false -> Failure(err, Unserved.UNEXPECTED, this.action)
+                    true -> Failure(err, this.status, this.action)
                 }
             }
         }
@@ -263,17 +269,17 @@ sealed class Result<out T, out E> {
             is Failure -> {
                 when (this.error) {
                     is Exception -> this as Try<T>
-                    is Err -> Failure(this.status.toException(listOf(this.error)), this.status)
-                    null -> Failure(Exception(this.status.message), this.status)
-                    else -> Failure(Exception(this.error.toString()), this.status)
+                    is Err -> Failure(this.status.toException(listOf(this.error)), this.status, this.action)
+                    null -> Failure(Exception(this.status.message), this.status, this.action)
+                    else -> Failure(Exception(this.error.toString()), this.status, this.action)
                 }
             }
         }
 
     companion object {
-        fun <T> attempt(f: () -> T): Try<T> = Tries.of(f)
+        fun <T> attempt(f: () -> T): Try<T> = Tries.attempt(f)
 
-        fun <T> outcome(f: () -> T): Outcome<T> = Outcomes.of(f)
+        fun <T> outcome(f: () -> T): Outcome<T> = Outcomes.attempt(f)
     }
 }
 
@@ -286,6 +292,7 @@ sealed class Result<out T, out E> {
 data class Success<out T>(
     val value: T,
     override val status: Passed,
+    override val action: Action? = null,
 ) : Result<T, Nothing>() {
     // NOTE: These overloads are here for convenience + Java Interoperability
 
@@ -312,6 +319,7 @@ data class Success<out T>(
 data class Failure<out E>(
     val error: E,
     override val status: Failed,
+    override val action: Action? = null,
 ) : Result<Nothing, E>() {
     // NOTE: These overloads are here for convenience + Java Interoperability
 

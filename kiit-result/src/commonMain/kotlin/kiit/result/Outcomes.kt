@@ -32,9 +32,43 @@ interface OutcomeBuilder : Builder<Err> {
  */
 object Outcomes : OutcomeBuilder {
     /**
-     * Build an Outcome<T> ( type alias ) for Result<T,Err> using the supplied function
+     * Build an Outcome<T> ( type alias ) for Result<T,Err> using the supplied function,
+     * catching any thrown exception and adapting it into a [Failure].
      */
-    inline fun <T> of(f: () -> T): Outcome<T> = build(f, { ex -> Err.ex(ex) })
+    inline fun <T> attempt(f: () -> T): Outcome<T> = build(f, { ex -> Err.ex(ex) })
+
+    /**
+     * Build an Outcome<T> using the supplied function, catching any thrown exception, and
+     * tag the result with an [Action] describing the operation.
+     *
+     * # Example
+     * ```
+     * Outcomes.attempt("chargeCard", xid = requestId) { paymentClient.charge(amount) }
+     * ```
+     */
+    inline fun <T> attempt(
+        action: String,
+        xid: String? = null,
+        data: Map<String, String> = mapOf(),
+        f: () -> T,
+    ): Outcome<T> = attempt(f).withAction(Action(action, xid, data))
+
+    /**
+     * Run the supplied Outcome-producing operation and tag the result with an [Action]
+     * describing the operation. Unlike [attempt], this does not catch exceptions — `op` is
+     * expected to already return an [Outcome].
+     *
+     * # Example
+     * ```
+     * Outcomes.of("getUser", xid = requestId) { userRepo.find(id) }
+     * ```
+     */
+    inline fun <T> of(
+        action: String,
+        xid: String? = null,
+        data: Map<String, String> = mapOf(),
+        op: () -> Outcome<T>,
+    ): Outcome<T> = op().withAction(Action(action, xid, data))
 
     /**
      * Build a Result<T,E> using the supplied callback and error handler

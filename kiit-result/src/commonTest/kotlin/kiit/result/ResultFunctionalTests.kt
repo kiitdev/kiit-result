@@ -166,7 +166,7 @@ class ResultFunctionalTests {
     fun can_chain() {
         var successValue = ""
 
-        val result1 = Outcomes.of { "1" }
+        val result1 = Outcomes.attempt { "1" }
         val result2 =
             result1.map { it.toInt() }
                 .onSuccess { successValue = "converted to int: $it" }

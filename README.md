@@ -26,7 +26,7 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 | **Start** | |
 | 🚀 [Quick start](#-quick-start) | Install the library and see `Outcome`, builders, and conversions |
 | **Reference** | |
-| 🧠 [Core concepts](#-core-concepts) | `Result`/`Success`/`Failure`, the type aliases, and the builders |
+| 🧠 [Core concepts](#-core-concepts) | `Result`/`Success`/`Failure`, `Action`, the type aliases, and the builders |
 | 🏗️ [Builders](#️-builders) | The status-aware `restricted`/`invalid`/`rejected`/`unserved`/`excluded` factories |
 | 🔁 [Conversions](#-conversions) | `toOutcome()`/`toTry()` and interop with kiit-codes' `StatusException` |
 | **Guidance** | |
@@ -44,6 +44,13 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 ## ℹ️ About
 
 **kiit.result** is a `Result<T, E>` type for Kotlin Multiplatform — similar to `Result` in Rust and Swift, or `Try` in Scala. It models the outcome of an operation as one of two branches, `Success<T>` or `Failure<E>`, each carrying an optional [kiit-codes](https://github.com/slatekit/kiit-codes) `Status` so a caller can inspect *why*, not just *whether*.
+
+Modeling an operation this way means answering four separable questions, not one:
+
+1. **Did it work?** — `Success<T>` or `Failure<E>`.
+2. **What kind of outcome was it?** — `status: Status`, a closed taxonomy from kiit-codes (`Succeeded`, `Restricted`, `Invalid`, `Rejected`, ...).
+3. **What went wrong, specifically?** — the `Failure` branch's `error: E`, most commonly kiit-codes' `Err`, carrying per-instance detail a fixed status can't.
+4. **What was being done, and under what circumstances?** — an optional `action: Action?`, naming the operation and any correlation id/attributes, attached via `withAction`.
 
 It builds directly on kiit-codes rather than reimplementing status classification:
 
@@ -126,8 +133,9 @@ See [`samples/sample1`](./samples/sample1) for a runnable end-to-end example.
 ```
 Result<T, E> = Success<T> | Failure<E>
 
-Success<T>.status : Passed  (from kiit-codes)
-Failure<E>.status : Failed  (from kiit-codes)
+Success<T>.status : Passed    (from kiit-codes)
+Failure<E>.status : Failed    (from kiit-codes)
+Result<T, E>.action : Action? (optional, both branches)
 ```
 
 | Term | What it is |
@@ -135,13 +143,14 @@ Failure<E>.status : Failed  (from kiit-codes)
 | **`Result<T, E>`** | Sealed type, either `Success<T>` or `Failure<E>`. |
 | **`Success<T>`** | Holds a `value: T` and a `status: Passed`. Defaults to `Succeeded.SUCCESS`. |
 | **`Failure<E>`** | Holds an `error: E` and a `status: Failed`. Defaults to `Unserved.UNEXPECTED`. |
+| **`Action`** | Optional context for the operation that produced/wrapped a `Result` — `action: String`, `xid: String? = null`, `data: Map<String, String> = mapOf()`, `previous: Action? = null`. Attach via `withAction(action, chain = true)`; chains to any existing `Action` by default, useful for pinpointing which layer failed in nested operations. |
 | **`message`** | `result.status.message` — a convenience accessor on every `Result`. |
 | **`Option<T>`** | `Result<T, Unit>` — the historical role of `Option`/`Maybe` (Rust/Scala/Arrow), reimagined on `Result` so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the discoverable entry points. |
 | **`Try<T>`** | `Result<T, Throwable>` — exception as the error type. |
 | **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
 
-Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`, `getOrNull`, `getOrElse`, `onSuccess`, `onFailure`, `transform`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s.
+Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`, `getOrNull`, `getOrElse`, `onSuccess`, `onFailure`, `transform`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
 
 ## 🏗️ Builders
 
@@ -256,6 +265,7 @@ val c = Tries.of { riskyCall() }      // Try<T>      — catches Throwable, re-d
 - [ ] npm publish pipeline for JS consumers (`@kiit/result`)
 - [ ] SPM / XCFramework pipeline for Swift consumers
 - [ ] Diagrams and a fuller FAQ, matching kiit-codes' README
+- [ ] `Raise<E>`-style DSL (`result { }` + `.bind()`) as a flat, non-nested alternative to `.then { }` chaining for multi-step composition — needs Kotlin context parameters, which are experimental as of 2.3.x and reach Stable in 2.4.0
 
 Track progress or open a discussion in [Issues](https://github.com/slatekit/kiit-result/issues).
 

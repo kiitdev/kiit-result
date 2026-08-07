@@ -37,11 +37,11 @@ interface TryBuilder : Builder<Throwable> {
  */
 object Tries : TryBuilder {
     /**
-     * Build a Try<T> ( Result<T,Throwable> ) using the supplied callback.
-     * This allows for using a thrown [kiit.codes.StatusException] to build the Try
+     * Build a Try<T> ( Result<T,Throwable> ) using the supplied callback, catching any thrown
+     * exception. This allows for using a thrown [kiit.codes.StatusException] to build the Try
      * by getting the appropriate status out of the thrown exception.
      */
-    inline fun <T> of(f: () -> T): Try<T> =
+    inline fun <T> attempt(f: () -> T): Try<T> =
         try {
             val data = f()
             Success(data)
