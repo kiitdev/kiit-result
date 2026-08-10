@@ -1,10 +1,8 @@
 package kiit.result
 
-import kiit.codes.Err
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-
 
 /**
  * Tests [Action], [withAction], its propagation through map/mapError/toOutcome/toTry,
@@ -26,6 +24,19 @@ class ActionTests {
 
         assertEquals("processOrder", outer.action?.action)
         assertEquals("chargeCard", outer.action?.previous?.action)
+    }
+
+    @Test
+    fun explicit_previous_is_respected_when_chaining() {
+        val first = Success(42).withAction(Action("createUser", xid = "1"))
+        val second =
+            Success(42).withAction(
+                Action("justiceLeague", xid = "1", previous = first.action),
+                chain = true,
+            )
+
+        assertEquals("justiceLeague", second.action?.action)
+        assertEquals("createUser", second.action?.previous?.action)
     }
 
     @Test
@@ -93,6 +104,18 @@ class ActionTests {
         assertEquals("alice", result.getOrNull())
         assertEquals("getUser", result.action?.action)
         assertEquals("req-2", result.action?.xid)
+    }
+
+    @Test
+    fun outcomes_of_with_action_object_chains_onto_explicit_previous() {
+        val first = Outcomes.of("createUser", xid = "1") { Outcomes.attempt { "alice" } }
+        val second =
+            Outcomes.of(Action("justiceLeague", xid = "1", previous = first.action)) {
+                Outcomes.attempt { "diana" }
+            }
+
+        assertEquals("justiceLeague", second.action?.action)
+        assertEquals("createUser", second.action?.previous?.action)
     }
 
     @Test

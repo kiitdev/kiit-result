@@ -71,6 +71,21 @@ object Outcomes : OutcomeBuilder {
     ): Outcome<T> = op().withAction(Action(action, xid, data))
 
     /**
+     * Run the supplied Outcome-producing operation and tag the result with the given [Action].
+     * Use this over the string-based [of] when you need finer control than `action`/`xid`/`data`
+     * alone can express — most commonly, an explicit [Action.previous] to chain onto.
+     *
+     * # Example
+     * ```
+     * Outcomes.of(Action("justiceLeague", xid = requestId, previous = earlier.action)) {
+     *     userRepo.find(id)
+     * }
+     * ```
+     */
+    inline fun <T> of(action: Action, chain: Boolean = true, op: () -> Outcome<T>): Outcome<T> =
+        op().withAction(action, chain)
+
+    /**
      * Build a Result<T,E> using the supplied callback and error handler
      */
     inline fun <T> build(f: () -> T, onError: (Throwable) -> Err): Outcome<T> =

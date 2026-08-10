@@ -32,10 +32,11 @@ data class Action(
 /**
  * Applies the supplied [Action] to this result.
  *
- * @param action : The [Action] describing the operation that produced/wrapped this result
- * @param chain : When true (default), links the supplied action's [Action.previous] to whatever
- *                action is already on this result, preserving history across nested operations.
- *                When false, the supplied action replaces any existing one outright.
+ * @param action : The [Action] describing the operation that produced/wrapped this result. If it
+ *                 already has an explicit [Action.previous] set, that's always respected.
+ * @param chain : When true (default) and [action] has no explicit [Action.previous], links it to
+ *                whatever action is already on this result, preserving history across nested
+ *                operations. When false, [action] is applied as-is.
  *
  * # Example
  * ```
@@ -44,7 +45,7 @@ data class Action(
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.withAction(action: Action, chain: Boolean = true): Result<T, E> {
-    val next = if (chain) action.copy(previous = this.action) else action
+    val next = if (chain) action.copy(previous = action.previous ?: this.action) else action
     return when (this) {
         is Success -> this.copy(action = next)
         is Failure -> this.copy(action = next)

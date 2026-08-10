@@ -6,6 +6,10 @@ import kiit.result.Outcome
 private val http = CodesToHttp()
 
 fun main() {
+    testSample1()
+}
+
+fun testSample1() {
     val service = UserService()
 
     report("create alice", service.create("alice", "alice@example.com"))

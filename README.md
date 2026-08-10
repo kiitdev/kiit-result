@@ -192,10 +192,10 @@ import kiit.result.Outcomes
 import kiit.result.Options
 import kiit.result.Tries
 
-val a = Outcomes.of { riskyCall() }   // Outcome<T>  — catches Throwable, wraps as Err
-val b = Options.of { riskyCall() }    // Option<T>   — catches Throwable, discards detail
-val c = Tries.of { riskyCall() }      // Try<T>      — catches Throwable, re-derives status
-                                        //               from a thrown kiit-codes StatusException
+val a = Outcomes.attempt { riskyCall() }  // Outcome<T>  — catches Throwable, wraps as Err
+val b = Options.of { riskyCall() }        // Option<T>   — catches Throwable, discards detail
+val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, re-derives status
+                                            //               from a thrown kiit-codes StatusException
 ```
 
 ## 🔁 Conversions
