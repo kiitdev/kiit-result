@@ -20,6 +20,7 @@ import kiit.codes.Status
 import kiit.codes.StatusException
 import kiit.codes.Unserved
 import kiit.result.builders.Builder
+import kotlin.jvm.JvmStatic
 
 /**
  * Builds [Result] with [Failure] error type of [Throwable]
@@ -41,6 +42,7 @@ object Tries : TryBuilder {
      * exception. This allows for using a thrown [kiit.codes.StatusException] to build the Try
      * by getting the appropriate status out of the thrown exception.
      */
+    @JvmStatic
     inline fun <T> attempt(f: () -> T): Try<T> =
         try {
             val data = f()

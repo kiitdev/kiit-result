@@ -9,7 +9,12 @@
  * about: A Kotlin Tool-Kit for Server + Android
  *  </kiit_header>
  */
+@file:JvmName("Actions")
+
 package kiit.result
+
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
 
 /**
  * Describes the operation that produced a [Result] — the "what were we doing" complement to
@@ -22,12 +27,14 @@ package kiit.result
  * @param data : Optional free-form attributes for this operation
  * @param previous : Optional link to the [Action] this one was chained from, see [withAction]
  */
-data class Action(
-    val action: String,
-    val xid: String? = null,
-    val data: Map<String, String> = mapOf(),
-    val previous: Action? = null,
-)
+data class Action
+    @JvmOverloads
+    constructor(
+        val action: String,
+        val xid: String? = null,
+        val data: Map<String, String> = mapOf(),
+        val previous: Action? = null,
+    )
 
 /**
  * Applies the supplied [Action] to this result.
@@ -44,6 +51,7 @@ data class Action(
  * ```
  */
 @Suppress("NOTHING_TO_INLINE")
+@JvmOverloads
 inline fun <T, E> Result<T, E>.withAction(action: Action, chain: Boolean = true): Result<T, E> {
     val next = if (chain) action.copy(previous = action.previous ?: this.action) else action
     return when (this) {
