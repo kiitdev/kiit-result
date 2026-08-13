@@ -3,6 +3,7 @@ package sample;
 import kiit.codes.Err;
 import kiit.codes.Failed;
 import kiit.codes.Passed;
+import kiit.codes.Status;
 import kiit.result.Action;
 import kiit.result.Actions;
 import kiit.result.Failure;
@@ -57,22 +58,32 @@ public class SampleApp {
         System.out.println("describe(bare): " + describe(bare));
         System.out.println("describe(failBare): " + describe(failBare));
 
+        // Exhaustive switches over the Passed/Failed *group* level (4 leaves each) and over the
+        // combined Status hierarchy (8 leaves) — same pattern as kiit-codes' own sample, since
+        // Success/Failure carry a Passed/Failed status. All three compile with no `default`
+        // branch only because Passed, Failed, and Status are sealed and jvmTarget = JVM_21 makes
+        // Kotlin emit PermittedSubclasses for each.
+        System.out.println("group(withStatus): " + describeGroup(withStatus.getStatus()));
+        System.out.println("group(failWithStatus): " + describeGroup(failWithStatus.getStatus()));
+        System.out.println("status(withStatus): " + describeStatus(withStatus.getStatus()));
+        System.out.println("status(failWithStatus): " + describeStatus(failWithStatus.getStatus()));
+
         // Outcomes/Tries/Options — each object's own directly-declared members are @JvmStatic;
         // the inherited Builder/PassedBuilder/FailedBuilder surface (success/restricted/etc.)
         // stays Outcomes.INSTANCE-only for now — a deliberately deferred, documented limitation.
         Result<Integer, Err> attempted = Outcomes.attempt("chargeCard", () -> 100);
-        System.out.println("attempted: " + attempted.getValue());
+        System.out.println("attempted: " + attempted.getOrNull());
 
         Result<Integer, Err> tagged =
             Outcomes.of(new Action("justiceLeague"), () -> Outcomes.attempt(() -> 7));
         System.out.println("tagged action: " + tagged.getAction().getAction());
 
         Result<Integer, Throwable> tried = Tries.attempt(() -> 5);
-        System.out.println("tried: " + tried.getValue());
+        System.out.println("tried: " + tried.getOrNull());
 
         Result<Integer, Unit> some = Options.some(9);
         Result<Integer, Unit> none = Options.none();
-        System.out.println("some: " + some.getValue() + ", none status: " + none.getStatus().getName());
+        System.out.println("some: " + some.getOrNull() + ", none status: " + none.getStatus().getName());
 
         // Action / withAction — @JvmOverloads gives Java the no-`chain`-arg form.
         Result<Integer, String> chained = Actions.withAction(bare, new Action("step2"));
@@ -91,6 +102,44 @@ public class SampleApp {
         return switch (result) {
             case Success<?> s -> "Success: " + s.getValue();
             case Failure<?> f -> "Failure: " + f.getError();
+        };
+    }
+
+    // Exhaustive, no-`default` switch over Passed's 4 leaf subtypes — overload resolution picks
+    // this one when the static type of the argument is Passed (e.g. Success.getStatus()).
+    private static String describeGroup(Passed passed) {
+        return switch (passed) {
+            case Passed.Succeeded s -> "Succeeded: " + s.getName();
+            case Passed.Pending p -> "Pending: " + p.getName();
+            case Passed.Excluded e -> "Excluded: " + e.getName();
+            case Passed.Information i -> "Information: " + i.getName();
+        };
+    }
+
+    // Exhaustive, no-`default` switch over Failed's 4 leaf subtypes — picked when the static type
+    // is Failed (e.g. Failure.getStatus()).
+    private static String describeGroup(Failed failed) {
+        return switch (failed) {
+            case Failed.Restricted r -> "Restricted: " + r.getName();
+            case Failed.Invalid i -> "Invalid: " + i.getName();
+            case Failed.Rejected r -> "Rejected: " + r.getName();
+            case Failed.Unserved u -> "Unserved: " + u.getName();
+        };
+    }
+
+    // Exhaustive, no-`default` switch over the full 8-leaf Status hierarchy (Passed's 4 + Failed's
+    // 4 combined) — takes the common Status supertype, so it works for either a Success's or a
+    // Failure's status without needing overload resolution to pick a branch.
+    private static String describeStatus(Status status) {
+        return switch (status) {
+            case Passed.Succeeded s -> "Succeeded: " + s.getName();
+            case Passed.Pending p -> "Pending: " + p.getName();
+            case Passed.Excluded e -> "Excluded: " + e.getName();
+            case Passed.Information i -> "Information: " + i.getName();
+            case Failed.Restricted r -> "Restricted: " + r.getName();
+            case Failed.Invalid i -> "Invalid: " + i.getName();
+            case Failed.Rejected r -> "Rejected: " + r.getName();
+            case Failed.Unserved u -> "Unserved: " + u.getName();
         };
     }
 }
