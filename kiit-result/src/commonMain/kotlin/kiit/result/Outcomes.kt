@@ -15,6 +15,8 @@ package kiit.result
 import kiit.codes.Err
 import kiit.codes.Status
 import kiit.result.builders.Builder
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 
 /**
  * Builds [Result] with [Failure] error type of [Err]
@@ -35,6 +37,7 @@ object Outcomes : OutcomeBuilder {
      * Build an Outcome<T> ( type alias ) for Result<T,Err> using the supplied function,
      * catching any thrown exception and adapting it into a [Failure].
      */
+    @JvmStatic
     inline fun <T> attempt(f: () -> T): Outcome<T> = build(f, { ex -> Err.ex(ex) })
 
     /**
@@ -46,6 +49,8 @@ object Outcomes : OutcomeBuilder {
      * Outcomes.attempt("chargeCard", xid = requestId) { paymentClient.charge(amount) }
      * ```
      */
+    @JvmStatic
+    @JvmOverloads
     inline fun <T> attempt(
         action: String,
         xid: String? = null,
@@ -63,6 +68,8 @@ object Outcomes : OutcomeBuilder {
      * Outcomes.of("getUser", xid = requestId) { userRepo.find(id) }
      * ```
      */
+    @JvmStatic
+    @JvmOverloads
     inline fun <T> of(
         action: String,
         xid: String? = null,
@@ -82,12 +89,15 @@ object Outcomes : OutcomeBuilder {
      * }
      * ```
      */
+    @JvmStatic
+    @JvmOverloads
     inline fun <T> of(action: Action, chain: Boolean = true, op: () -> Outcome<T>): Outcome<T> =
         op().withAction(action, chain)
 
     /**
      * Build a Result<T,E> using the supplied callback and error handler
      */
+    @JvmStatic
     inline fun <T> build(f: () -> T, onError: (Throwable) -> Err): Outcome<T> =
         try {
             val data = f()

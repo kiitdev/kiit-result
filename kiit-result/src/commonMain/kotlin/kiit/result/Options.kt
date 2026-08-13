@@ -18,6 +18,7 @@ import kiit.codes.Rejected
 import kiit.codes.Status
 import kiit.codes.Unserved
 import kiit.result.builders.Builder
+import kotlin.jvm.JvmStatic
 
 /**
  * Builds [Result] with [Failure] error type of [Unit]
@@ -41,11 +42,13 @@ object Options : OptionsBuilder {
     /**
      * Build an Option<T> ( type alias ) for Result<T,Unit> using the supplied function
      */
+    @JvmStatic
     inline fun <T> of(f: () -> T): Option<T> = build(f, { _ -> Unserved.UNEXPECTED })
 
     /**
      * Build a Result<T,E> using the supplied callback and error handler
      */
+    @JvmStatic
     inline fun <T> build(f: () -> T, onError: (Throwable) -> Failed): Option<T> =
         try {
             val data = f()
@@ -58,15 +61,19 @@ object Options : OptionsBuilder {
     /**
      * Builds a present [Option] — the [Result] equivalent of Rust/Scala's `Some`.
      */
+    @JvmStatic
     fun <T> some(value: T): Option<T> = success(value)
 
     /**
      * Builds an absent [Option] — the [Result] equivalent of Rust/Scala's `None`, with a [status]
      * explaining why the value is absent (defaults to [Rejected.NOT_EXISTS]).
      */
+    @JvmStatic
     fun <T> none(): Option<T> = Failure(Unit, Rejected.NOT_EXISTS)
 
+    @JvmStatic
     fun <T> none(msg: String): Option<T> = Failure(Unit, Status.ofStatus(msg, null, Rejected.NOT_EXISTS))
 
+    @JvmStatic
     fun <T> none(status: Failed.Rejected): Option<T> = Failure(Unit, status)
 }
