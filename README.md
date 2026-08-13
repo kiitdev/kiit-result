@@ -128,7 +128,8 @@ val asTry = userService.fetch("missing").toTry()
 asTry.onFailure { ex -> println("caught: ${ex.message}") }
 ```
 
-See [`samples/sample1`](./samples/sample1) for a runnable end-to-end example.
+See [`samples/sample-kotlin`](./samples/sample-kotlin) for a runnable end-to-end Kotlin example, or
+[`samples/sample-java`](./samples/sample-java) for the same library used from plain Java.
 
 ## 🧠 Core concepts
 
