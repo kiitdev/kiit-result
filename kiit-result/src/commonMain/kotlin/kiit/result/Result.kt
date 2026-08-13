@@ -9,6 +9,7 @@
  * about: A Kotlin Tool-Kit for Server + Android
  *  </kiit_header>
  */
+@file:JvmName("Results")
 
 package kiit.result
 
@@ -19,6 +20,9 @@ import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 import kiit.codes.toException
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmOverloads
+import kotlin.jvm.JvmStatic
 
 /**
  * Models successes and failures with an optional status.
@@ -234,6 +238,7 @@ sealed class Result<out T, out E> {
      * ```
      */
     @Suppress("UNCHECKED_CAST")
+    @JvmOverloads
     fun toOutcome(retainStatus: Boolean = true): Outcome<T> =
         when (this) {
             is Success -> this
@@ -277,8 +282,10 @@ sealed class Result<out T, out E> {
         }
 
     companion object {
+        @JvmStatic
         fun <T> attempt(f: () -> T): Try<T> = Tries.attempt(f)
 
+        @JvmStatic
         fun <T> outcome(f: () -> T): Outcome<T> = Outcomes.attempt(f)
     }
 }
@@ -288,27 +295,35 @@ sealed class Result<out T, out E> {
  *
  * @param value : Value representing the success
  * @param status : Optional status as [Passed]
+ *
+ * Java note: `Result<out T, out E>`'s covariance and the `Nothing` in `Result<T, Nothing>` below
+ * are Kotlin-only concepts with no fix possible for Java — `out` shows up as wildcard-bounded
+ * generics (`Result<? extends T, ? extends E>`), and `Nothing` as an uninstantiable type
+ * parameter. Not a bug, just an unavoidable friction point; documented rather than "solved," same
+ * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
  */
-data class Success<out T>(
-    val value: T,
-    override val status: Passed,
-    override val action: Action? = null,
-) : Result<T, Nothing>() {
-    // NOTE: These overloads are here for convenience + Java Interoperability
+data class Success<out T>
+    @JvmOverloads
+    constructor(
+        val value: T,
+        override val status: Passed,
+        override val action: Action? = null,
+    ) : Result<T, Nothing>() {
+        // NOTE: These overloads are here for convenience + Java Interoperability
 
-    /**
-     * Initialize using explicitly supplied message
-     * @param value : Value representing the success
-     */
-    constructor(value: T) : this(value, Succeeded.SUCCESS)
+        /**
+         * Initialize using explicitly supplied message
+         * @param value : Value representing the success
+         */
+        constructor(value: T) : this(value, Succeeded.SUCCESS)
 
-    /**
-     * Initialize using explicitly supplied message
-     * @param value : Value representing the success
-     * @param msg : Optional message for the status
-     */
-    constructor(value: T, msg: String) : this(value, Status.ofStatus(msg, null, Succeeded.SUCCESS))
-}
+        /**
+         * Initialize using explicitly supplied message
+         * @param value : Value representing the success
+         * @param msg : Optional message for the status
+         */
+        constructor(value: T, msg: String) : this(value, Status.ofStatus(msg, null, Succeeded.SUCCESS))
+    }
 
 /**
  * Failure branch of the result
@@ -316,26 +331,28 @@ data class Success<out T>(
  * @param error : Error representing the failure
  * @param status : Optional status as [Failed]
  */
-data class Failure<out E>(
-    val error: E,
-    override val status: Failed,
-    override val action: Action? = null,
-) : Result<Nothing, E>() {
-    // NOTE: These overloads are here for convenience + Java Interoperability
+data class Failure<out E>
+    @JvmOverloads
+    constructor(
+        val error: E,
+        override val status: Failed,
+        override val action: Action? = null,
+    ) : Result<Nothing, E>() {
+        // NOTE: These overloads are here for convenience + Java Interoperability
 
-    /**
-     * Initialize using explicitly supplied message
-     * @param error : Error representing the failure
-     */
-    constructor(error: E) : this(error, Unserved.UNEXPECTED)
+        /**
+         * Initialize using explicitly supplied message
+         * @param error : Error representing the failure
+         */
+        constructor(error: E) : this(error, Unserved.UNEXPECTED)
 
-    /**
-     * Initialize using explicitly supplied message
-     * @param error : Error representing the failure
-     * @param msg : Optional message for the status
-     */
-    constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
-}
+        /**
+         * Initialize using explicitly supplied message
+         * @param error : Error representing the failure
+         * @param msg : Optional message for the status
+         */
+        constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
+    }
 
 /**
  * Applies supplied function `f` if this is a [Success]
