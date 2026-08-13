@@ -23,3 +23,4 @@ rootProject.name = "kiit-result"
 
 include(":kiit-result")
 include(":samples:sample-kotlin")
+include(":samples:sample-java")
