@@ -84,7 +84,7 @@ Two workflows live under [`.github/workflows`](.github/workflows):
 
 | Workflow | File | Trigger | What it does |
 |----------|------|---------|---------------|
-| CI | `ci.yml` | Every PR into `main` | `ktlintCheck`, `detekt`, `jvmTest`, `jsNodeTest` on `ubuntu-latest`. iOS tests are not run in CI (no macOS runner). |
+| CI | `ci.yml` | Every PR into `main` | `ktlintCheck`, `detekt`, `jvmTest` on `ubuntu-latest`. `jsNodeTest` is commented out (JS/TS is a deliberately partial, non-CI-gated pass). iOS tests are not run in CI (no macOS runner). |
 | Release | `release.yml` | Manual (`workflow_dispatch`) | Builds, tests, publishes to Maven Central, tags, and cuts a GitHub release. Runs on `macos-latest` — required to build/sign the iOS targets. |
 
 CI runners are ephemeral — there is no persistent GPG keyring. The secret key must be imported at the start of every release run.
@@ -169,6 +169,10 @@ Gradle itself already passes `--batch --pinentry-mode loopback` automatically wh
 
 # Run the Java sample app
 ./gradlew :samples:sample-java:run
+
+# Run the Swift sample app (macOS only, needs Xcode + an iOS Simulator runtime)
+./gradlew :kiit-result:linkDebugFrameworkIosSimulatorArm64
+cd samples/sample-swift && ./run.sh
 ```
 
 ---

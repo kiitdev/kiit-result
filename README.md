@@ -131,6 +131,31 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 See [`samples/sample-kotlin`](./samples/sample-kotlin) for a runnable end-to-end Kotlin example, or
 [`samples/sample-java`](./samples/sample-java) for the same library used from plain Java.
 
+**Swift:** not yet distributed via SPM/XCFramework (the framework is `.framework`-only today,
+built locally). Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared`
+access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real,
+compiler-enforced Swift exhaustiveness over `Success`/`Failure` — a genuinely **flat** switch,
+simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
+
+```swift
+import KiitResult
+
+let result = Success(value: KotlinInt(value: 42))
+
+func describe<T, E>(_ r: Result<T, E>) -> String {
+    switch onEnum(of: r) {
+    case .success(let s): return "ok: \(String(describing: s.value))"
+    case .failure(let f): return "err: \(String(describing: f.error))"
+    }
+}
+```
+
+Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSString`), and
+Kotlin's `Nothing` doesn't widen to a concrete error type in Swift — see
+[`samples/sample-swift`](./samples/sample-swift) for the full, verified-working subset and exactly
+what does and doesn't work (including a confirmed-broken case: `flatMap` can't be used from Swift
+to construct new results).
+
 ## 🧠 Core concepts
 
 ```
@@ -226,7 +251,7 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 
 ## ❓ FAQ
 
-> **Note:** this FAQ is a first draft, written before the multiplatform export work (`@JsExport`/`@JsName` on both `kiit-codes` and `kiit-result`) is done. The JS/iOS answer below will be revisited once that's complete.
+> **Note:** this FAQ predates the multiplatform export work — `@JsExport`/`@JsName` (JS/TS) and SKIE (iOS/Swift) are both applied now; see the JS/iOS answer below for current status.
 
 | Question | Answer |
 |---|---|
@@ -250,7 +275,7 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 | **Adoption in Practice** | |
 | Can I use my own error type and ignore kiit-codes? | Only partially — `E` is generic (use `Throwable`, `String`, your own type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
 | What if my team already has its own status conventions? | Not an overnight replacement — existing statuses can map into the taxonomy incrementally. |
-| Does this actually work on JS and iOS today? | Worth being precise here: kiit-result's production history (see Maturity below) is JVM/Android — it doesn't extend to JS or iOS/Swift, which are new targets with no production history yet, not just "unexercised" versions of something proven. It compiles cleanly on all three targets, but nothing is `@JsExport`ed yet (no typed surface for TS consumers), and iOS lacks `SKIE` for native default-parameter ergonomics. Multiplatform-*designed*, years-proven on JVM/Android, new on JS/iOS. |
+| Does this actually work on JS and iOS today? | Worth being precise here: kiit-result's production history (see Maturity below) is JVM/Android — JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately **partial** pass — `Result`/`Success`/`Failure`/`Action`/the builder interfaces are `@JsExport`ed, but it's not CI-gated or published to npm (see `samples/sample-ts`), since TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can. iOS uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness (see `samples/sample-swift`) — a materially better story than JS here, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work, unlike JS. Multiplatform-*designed*, years-proven on JVM/Android, newer on JS/iOS. |
 | **The AI Angle** | |
 | Is the "built for AI" angle just marketing? | Same answer as kiit-codes gives, extended to the `Result` layer: the design choices are justified on ordinary engineering grounds first — exhaustive branching, a small fixed vocabulary, fewer decisions per call site. AI tooling benefits from the same properties any consistent codebase does, but the library stands on its own without that framing. |
 | What's the actual theory? | A closed `Success`/`Failure` split with a fixed, named-category vocabulary (`restricted`/`invalid`/`rejected`/`unserved`/`excluded`) gives an AI generating or reading code a small, predictable set of shapes to reach for, instead of guessing at ad hoc exception types or boolean flags per call site — and Kotlin's compiler-enforced exhaustive `when` over `Success`/`Failure` means a branch can't be silently missed, by a human or a model. Better accuracy, searchability, and standardization across a codebase are the claimed benefits — not proven, and intentionally modest about that, same as kiit-codes. |
@@ -266,7 +291,9 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 ## 🗺️ Roadmap
 
 - [ ] npm publish pipeline for JS consumers (`@kiit/result`)
-- [ ] SPM / XCFramework pipeline for Swift consumers
+- [ ] SPM / XCFramework pipeline for Swift consumers — SKIE is now applied for real Swift
+      exhaustiveness (see Quick Start above and `samples/sample-swift`), but distribution itself
+      (an actual `.xcframework` + SPM package, publishing to `kiit-spm`) is still unbuilt
 - [ ] Diagrams and a fuller FAQ, matching kiit-codes' README
 - [ ] `Raise<E>`-style DSL (`result { }` + `.bind()`) as a flat, non-nested alternative to `.then { }` chaining for multi-step composition — needs Kotlin context parameters, which are experimental as of 2.3.x and reach Stable in 2.4.0
 
