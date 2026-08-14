@@ -19,7 +19,7 @@
 .idea/
 build/
 .lib/
-dist/*
+dist/
 
 # Kotlin/Gradle plugin metadata cache
 .kotlin/

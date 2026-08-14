@@ -10,6 +10,8 @@
  *  </kiit_header>
  */
 
+@file:OptIn(ExperimentalJsExport::class)
+
 package kiit.result.builders
 
 import kiit.codes.Err
@@ -18,6 +20,9 @@ import kiit.codes.Passed
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 import kiit.result.Result
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
+import kotlin.js.JsName
 
 /**
  * Provides convenient ways to build the most common Successes/Failures with
@@ -25,6 +30,7 @@ import kiit.result.Result
  * Composed from [PassedBuilder] and [FailedBuilder]; [of] lives here rather than on either half
  * since it calls into both `success(...)` and `unserved(...)`.
  */
+@JsExport
 interface Builder<out E> : PassedBuilder<E>, FailedBuilder<E> {
     /**
      * Build a Result<T,E> using the supplied condition and default error builders
@@ -48,6 +54,7 @@ interface Builder<out E> : PassedBuilder<E>, FailedBuilder<E> {
     /**
      * Build a Result<T,E> for a possible null value
      */
+    @JsName("ofNullable")
     fun <T> of(t: T?): Result<T, E> =
         when (t) {
             null -> unserved("null")
