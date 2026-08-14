@@ -10,6 +10,7 @@
  *  </kiit_header>
  */
 @file:JvmName("Results")
+@file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class)
 
 package kiit.result
 
@@ -20,6 +21,11 @@ import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 import kiit.codes.toException
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.ExperimentalJsStatic
+import kotlin.js.JsExport
+import kotlin.js.JsName
+import kotlin.js.JsStatic
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
@@ -40,6 +46,7 @@ import kotlin.jvm.JvmStatic
  * 2. The failure value is of type E
  * 3. The status is optional to specify explicitly — it's always initialized, defaulting per branch
  */
+@JsExport
 sealed class Result<out T, out E> {
     /**
      * Optional status is defaulted in the [Success] and [Failure]
@@ -283,9 +290,11 @@ sealed class Result<out T, out E> {
 
     companion object {
         @JvmStatic
+        @JsStatic
         fun <T> attempt(f: () -> T): Try<T> = Tries.attempt(f)
 
         @JvmStatic
+        @JsStatic
         fun <T> outcome(f: () -> T): Outcome<T> = Outcomes.attempt(f)
     }
 }
@@ -301,7 +310,21 @@ sealed class Result<out T, out E> {
  * generics (`Result<? extends T, ? extends E>`), and `Nothing` as an uninstantiable type
  * parameter. Not a bug, just an unavoidable friction point; documented rather than "solved," same
  * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
+ *
+ * JS/TS notes (confirmed against the actual generated `.d.ts`, not assumed):
+ * 1. Covariance is a non-issue here — `out T`/`out E` erase to plain, non-wildcarded TS generics
+ *    (`Result<T, E>`), unlike Java's wildcard friction above. `Nothing` renders as TS's `never`.
+ * 2. Extension functions (`flatMap`, `getOrElse`, etc., below) export as flat top-level functions
+ *    taking the receiver as an explicit first parameter, not as callable methods on the value —
+ *    TS callers write `kiit.result.flatMap(result, fn)`, not `result.flatMap(fn)`.
+ * 3. `copy()`'s parameters become positional-optional in TS (`copy(value?, status?, action?)`),
+ *    not named/destructured — skipping `value` to only override `status` isn't possible the way
+ *    Kotlin's named-argument `copy(status = x)` allows; callers must pass `undefined` explicitly.
+ * 4. Secondary constructors can't be exported as alternate `new X(...)` forms — JS classes only
+ *    support one constructor. The `@JsName`d ones below become `static` factory methods instead
+ *    (`Success.of(42)`, `Success.ofMessage(42, "msg")`), not `new Success(42)`.
  */
+@JsExport
 data class Success<out T>
     @JvmOverloads
     constructor(
@@ -315,6 +338,7 @@ data class Success<out T>
          * Initialize using explicitly supplied message
          * @param value : Value representing the success
          */
+        @JsName("of")
         constructor(value: T) : this(value, Succeeded.SUCCESS)
 
         /**
@@ -322,6 +346,7 @@ data class Success<out T>
          * @param value : Value representing the success
          * @param msg : Optional message for the status
          */
+        @JsName("ofMessage")
         constructor(value: T, msg: String) : this(value, Status.ofStatus(msg, null, Succeeded.SUCCESS))
     }
 
@@ -331,6 +356,7 @@ data class Success<out T>
  * @param error : Error representing the failure
  * @param status : Optional status as [Failed]
  */
+@JsExport
 data class Failure<out E>
     @JvmOverloads
     constructor(
@@ -344,6 +370,7 @@ data class Failure<out E>
          * Initialize using explicitly supplied message
          * @param error : Error representing the failure
          */
+        @JsName("of")
         constructor(error: E) : this(error, Unserved.UNEXPECTED)
 
         /**
@@ -351,6 +378,7 @@ data class Failure<out E>
          * @param error : Error representing the failure
          * @param msg : Optional message for the status
          */
+        @JsName("ofMessage")
         constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
     }
 
@@ -365,6 +393,7 @@ data class Failure<out E>
  * val r2 = Failure("Unknown" ).flatMap { Success("???")        }  // Failure("Unknown")
  * ```
  */
+@JsExport
 inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T2, E> = this.then(f)
 
 /**
@@ -378,6 +407,7 @@ inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T
  * val r2 = Failure("Unknown" ).then { Success("???")        }  // Failure("Unknown")
  * ```
  */
+@JsExport
 inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, E> =
     when (this) {
         is Success -> f(this.value)
@@ -400,6 +430,7 @@ inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, 
  * ```
  */
 
+@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
     return when (this) {
@@ -408,6 +439,7 @@ inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
     }
 }
 
+@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
     when (this) {
@@ -430,6 +462,7 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
  * )
  * ```
  */
+@JsExport
 inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
     return when (this) {
         is Success -> op(this)
@@ -448,6 +481,7 @@ inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E
  * val r2 = Failure("Unknown" ).flatMapError { "???"        }  // Failure("???")
  * ```
  */
+@JsExport
 inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
     when (this) {
         is Success -> this
@@ -463,6 +497,7 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
  * Failure("Unknown" ).getOrElse("???")  // "???"
  * ```
  */
+@JsExport
 inline fun <T, E> Result<T, E>.getOrElse(f: () -> T): T =
     when (this) {
         is Success -> this.value
@@ -477,6 +512,7 @@ inline fun <T, E> Result<T, E>.getOrElse(f: () -> T): T =
  * val r1 = Success(Success("Superman")).inner() // Success("Clark Kent")
  * ```
  */
+@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
 
@@ -490,6 +526,7 @@ inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it
  * Failure(39).contains(42) // false
  * ```
  */
+@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
     when (this) {
@@ -505,6 +542,7 @@ inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
  * 42.success() // Success(42)
  * ```
  */
+@JsExport
 fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
 
 /**
@@ -515,4 +553,5 @@ fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
  * 400.failure() // Failure(400)
  * ```
  */
+@JsExport
 fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)

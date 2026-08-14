@@ -10,9 +10,12 @@
  *  </kiit_header>
  */
 @file:JvmName("Actions")
+@file:OptIn(ExperimentalJsExport::class)
 
 package kiit.result
 
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
 import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 
@@ -27,6 +30,7 @@ import kotlin.jvm.JvmOverloads
  * @param data : Optional free-form attributes for this operation
  * @param previous : Optional link to the [Action] this one was chained from, see [withAction]
  */
+@JsExport
 data class Action
     @JvmOverloads
     constructor(
@@ -50,6 +54,7 @@ data class Action
  * Success(42).withAction(Action("chargeCard", xid = "req-123"))
  * ```
  */
+@JsExport
 @Suppress("NOTHING_TO_INLINE")
 @JvmOverloads
 inline fun <T, E> Result<T, E>.withAction(action: Action, chain: Boolean = true): Result<T, E> {

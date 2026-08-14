@@ -9,7 +9,6 @@
  * about: A Kotlin Tool-Kit for Server + Android
  *  </kiit_header>
  */
-
 package kiit.result
 
 import kiit.codes.Err
