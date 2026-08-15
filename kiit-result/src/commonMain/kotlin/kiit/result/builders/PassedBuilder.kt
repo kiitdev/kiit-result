@@ -15,6 +15,7 @@
 package kiit.result.builders
 
 import kiit.codes.Excluded
+import kiit.codes.Information
 import kiit.codes.Passed
 import kiit.codes.Pending
 import kiit.codes.Status
@@ -56,12 +57,21 @@ interface PassedBuilder<out E> {
     // An excluded item is modeled as a Success, see kiit-codes' Passed.Excluded. An item that
     // was intentionally left out of an operation (deduplicated, disqualified, skipped by a
     // filter) isn't a failure, so this builds a [Success], not a [Failure].
-    fun <T> excluded(): Result<T?, E> = Success(null, status = Excluded.SKIPPED)
+    fun <T> excluded(): Result<T?, E> = Success(null, status = Excluded.OMITTED)
 
     @JsName("excludedMessage")
     fun <T> excluded(value: T, message: String? = null): Result<T, E> =
-        Success(value, Status.ofStatus(message, null, Excluded.SKIPPED))
+        Success(value, Status.ofStatus(message, null, Excluded.OMITTED))
 
     @JsName("excludedStatus")
     fun <T> excluded(value: T, status: Passed.Excluded): Result<T, E> = Success(value, status)
+
+    fun <T> information(): Result<T?, E> = Success(null, status = Information.NOTICE)
+
+    @JsName("informationMessage")
+    fun <T> information(value: T, message: String? = null): Result<T, E> =
+        Success(value, Status.ofStatus(message, null, Information.NOTICE))
+
+    @JsName("informationStatus")
+    fun <T> information(value: T, status: Passed.Information): Result<T, E> = Success(value, status)
 }
