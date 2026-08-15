@@ -33,7 +33,7 @@ function assertNever(x: never): never {
 
 // Kotlin secondary constructors can't become alternate `new X(...)` forms in JS — JS classes
 // support exactly one constructor. They're exported as `static` factory methods instead:
-// Success.of(value) / Success.ofMessage(value, msg), not `new Success(value)`.
+// Success.of(value) / Success.ofMessage(value, message), not `new Success(value)`.
 const bare = Success.of(42);
 const withMsg = Success.ofMessage(42, "created via convenience factory");
 console.log("bare:", bare.value, "withMsg:", withMsg.value);

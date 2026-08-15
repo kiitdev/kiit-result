@@ -36,6 +36,6 @@ fun testSample1() {
 private fun report(label: String, outcome: Outcome<User>) {
     val status = outcome.status
     val httpCode = http.toCode(status)
-    val detail = outcome.fold({ user -> "user=${user.id}" }, { err -> "error=${err.msg}" })
+    val detail = outcome.fold({ user -> "user=${user.id}" }, { err -> "error=${err.message}" })
     println("$label -> ${status.name} (success=${outcome.success}, http=$httpCode, $detail)")
 }

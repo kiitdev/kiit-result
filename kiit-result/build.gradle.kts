@@ -61,7 +61,7 @@ kotlin {
             // api, not implementation — kiit-result's public API (Result.status, Outcome<T>'s Err
             // type param, etc.) directly exposes kiit-codes types, so consumers need them
             // transitively on their own compile classpath.
-            api("dev.kiit:kiit-codes:0.2.1")
+            api("dev.kiit:kiit-codes:1.0.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

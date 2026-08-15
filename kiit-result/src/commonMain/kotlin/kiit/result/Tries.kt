@@ -31,7 +31,7 @@ interface TryBuilder : Builder<Throwable> {
     override fun errorFromStr(message: String?, defaultStatus: Status): Throwable =
         Throwable(message ?: defaultStatus.message)
 
-    override fun errorFromErr(err: Err, defaultStatus: Status): Throwable = Throwable(err.msg, err.cause)
+    override fun errorFromErr(err: Err, defaultStatus: Status): Throwable = Throwable(err.message, err.cause)
 }
 
 /**

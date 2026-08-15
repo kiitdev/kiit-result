@@ -13,14 +13,14 @@ func check(_ condition: Bool, _ label: String) {
 // Generics require AnyObject (Swift Int/String are value types) — use boxed KotlinInt/NSString.
 // Multiple constructors bridge as distinct real initializers, no collision.
 let bare = Success(value: KotlinInt(value: 42))
-let withMsg = Success(value: KotlinInt(value: 42), msg: "created via convenience overload")
+let withMessage = Success(value: KotlinInt(value: 42), message: "created via convenience overload")
 check(bare.value?.intValue == 42, "Success(value:).value")
-check(withMsg.status.message == "created via convenience overload", "Success(value:msg:).status.message")
+check(withMessage.status.message == "created via convenience overload", "Success(value:message:).status.message")
 
 let failBare = Failure(error: "boom" as NSString)
-let failMsg = Failure(error: "boom" as NSString, msg: "custom failure reason")
+let failMessage = Failure(error: "boom" as NSString, message: "custom failure reason")
 check(failBare.error! == "boom", "Failure(error:).error")
-check(failMsg.status.message == "custom failure reason", "Failure(error:msg:).status.message")
+check(failMessage.status.message == "custom failure reason", "Failure(error:message:).status.message")
 
 // Flat, compiler-enforced exhaustive switch (Success/Failure is single-level, unlike kiit-codes'
 // nested Status hierarchy). Generic over <T, E> since Success/Failure don't widen to a shared
@@ -66,9 +66,9 @@ check(describe(some) == "Success: Optional(9)", "Options.shared.some(value:)")
 
 // Overloaded Builder methods stay distinguishable as overloaded Swift methods (no @JsName needed).
 let r1 = Outcomes.shared.restricted()
-let r2 = Outcomes.shared.restricted(msg: "denied")
-check(describe(r1) == "Failure: Optional(ErrorInfo(msg=The request was denied., cause=null, ref=null))", "Outcomes.shared.restricted()")
-check(describe(r2) == "Failure: Optional(ErrorInfo(msg=denied, cause=null, ref=null))", "Outcomes.shared.restricted(msg:)")
+let r2 = Outcomes.shared.restricted(message: "denied")
+check(describe(r1) == "Failure: Optional(ErrorInfo(message=The request was denied., cause=null, ref=null))", "Outcomes.shared.restricted()")
+check(describe(r2) == "Failure: Optional(ErrorInfo(message=denied, cause=null, ref=null))", "Outcomes.shared.restricted(message:)")
 
 // SKIE does not give free default-argument ergonomics here — all params required explicitly.
 // Matches kiit-codes' own documented CodesToHttp finding, not a regression.

@@ -30,7 +30,7 @@ interface ResultTestSupport {
     /**
      * Asserts [result] is a [Failure] with a status matching [expectedStatus] (or
      * [expectedStatusMsg], if the message was overridden), and an error value matching
-     * [expectedError] — either directly (`String`) or via [Err.ErrorInfo.msg].
+     * [expectedError] — either directly (`String`) or via [Err.ErrorInfo.message].
      */
     fun <T> ensureFailure(
         result: Result<T, *>,
@@ -44,7 +44,7 @@ interface ResultTestSupport {
         result.onFailure {
             when (it) {
                 is String -> assertEquals(expectedError, it)
-                is Err.ErrorInfo -> assertEquals(expectedError, it.msg)
+                is Err.ErrorInfo -> assertEquals(expectedError, it.message)
                 else -> throw Exception("Unexpected for : $it")
             }
         }
