@@ -20,12 +20,21 @@ fun main() {
 // but built on kiit-result's Result instead.
 fun validatePhone(phone: String, caller: String = "guest"): Outcome<String> {
     return when {
-        phone.isEmpty() -> Outcomes.invalid(Err.on("phone", phone, "Too short"))
-        phone.length > 10 -> Outcomes.invalid(Err.on("phone", phone, "Too long"))
-        phone == "1111111111" -> Outcomes.rejected(Err.on("phone", phone, "Reserved phone for testing"))
-        phone.startsWith("123") && caller != "admin" ->
+        phone.isEmpty()    -> {
+            Outcomes.invalid(Err.on("phone", phone, "Too short"))
+        }
+        phone.length > 10 -> {
+            Outcomes.invalid(Err.on("phone", phone, "Too long"))
+        }
+        phone == "1111111111" -> {
+            Outcomes.rejected(Err.on("phone", phone, "Reserved phone for testing"))
+        }
+        phone.startsWith("123") && caller != "admin" -> {
             Outcomes.restricted(Err.on("phone", phone, "Only admins can validate internal-use numbers"))
-        else -> Outcomes.success(phone)
+        }
+        else -> {
+            Outcomes.success(phone)
+        }
     }
 }
 
@@ -49,9 +58,15 @@ data class UserForm(val name: String, val email: String, val phone: String)
 // together in one Failure.
 fun validateUser(form: UserForm): Validated<UserForm> {
     val errors = mutableListOf<Err>()
-    if (form.name.isBlank()) errors.add(Err.on("name", form.name, "Name is required"))
-    if (!form.email.contains("@")) errors.add(Err.on("email", form.email, "Email must contain @"))
-    if (form.phone.length != 10) errors.add(Err.on("phone", form.phone, "Phone must be 10 digits"))
+    if (form.name.isBlank()) {
+        errors.add(Err.on("name", form.name, "Name is required"))
+    }
+    if (!form.email.contains("@")) {
+        errors.add(Err.on("email", form.email, "Email must contain @"))
+    }
+    if (form.phone.length != 10) {
+        errors.add(Err.on("phone", form.phone, "Phone must be 10 digits"))
+    }
 
     return Validations.of(form, errors)
 }
