@@ -23,7 +23,7 @@ import kotlin.jvm.JvmStatic
 interface OutcomeBuilder : Builder<Err> {
     override fun errorFromEx(ex: Throwable, defaultStatus: Status): Err = Err.ex(ex)
 
-    override fun errorFromStr(msg: String?, defaultStatus: Status): Err = Err.of(msg ?: defaultStatus.message)
+    override fun errorFromStr(message: String?, defaultStatus: Status): Err = Err.of(message ?: defaultStatus.message)
 
     override fun errorFromErr(err: Err, defaultStatus: Status): Err = err
 }
@@ -59,7 +59,7 @@ object Outcomes : OutcomeBuilder {
 
     /**
      * Run the supplied Outcome-producing operation and tag the result with an [Action]
-     * describing the operation. Unlike [attempt], this does not catch exceptions — `op` is
+     * describing the operation. Unlike [attempt], this does not catch exceptions, `op` is
      * expected to already return an [Outcome].
      *
      * # Example
@@ -79,7 +79,7 @@ object Outcomes : OutcomeBuilder {
     /**
      * Run the supplied Outcome-producing operation and tag the result with the given [Action].
      * Use this over the string-based [of] when you need finer control than `action`/`xid`/`data`
-     * alone can express — most commonly, an explicit [Action.previous] to chain onto.
+     * alone can express, most commonly, an explicit [Action.previous] to chain onto.
      *
      * # Example
      * ```

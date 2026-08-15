@@ -36,15 +36,15 @@ import kotlin.jvm.JvmStatic
  *
  * DESIGN
  * While similar to other implementations, there are a few major differences:
- * 1. Flexible error   : Error type on the Failure branch can be anything — Exception, Err, String.
- * 2. Status taxonomy  : Every branch carries a status from kiit-codes' closed category taxonomy.
- * 3. Sensible defaults: Builders in `kiit.result.builders` supply a default status per category
+ * 1. Flexible error   : Error type on the Failure branch can be anything, Exception, Err, String.
+ * 2. Status taxonomy  : Every branch carries a status from kiit-codes' closed group taxonomy.
+ * 3. Sensible defaults: Builders in `kiit.result.builders` supply a default status per group
  *                       so routine use rarely needs to construct a [Status] by hand.
  *
  * NOTES:
  * 1. The success value is of type T
  * 2. The failure value is of type E
- * 3. The status is optional to specify explicitly — it's always initialized, defaulting per branch
+ * 3. The status is optional to specify explicitly, it's always initialized, defaulting per branch
  */
 @JsExport
 sealed class Result<out T, out E> {
@@ -90,8 +90,8 @@ sealed class Result<out T, out E> {
      *
      * # Example
      * ```
-     * val r1 = Success("Superman").map { "Clark Kent" }  // Success("Clark Kent")
-     * val r2 = Failure("Unknown" ).map { "???"        }  // Failure("Unknown")
+     * val r1 = Success("Superman").mapError { "unknown" }  // Success("Superman")
+     * val r2 = Failure("error"    ).mapError { "unknown" }  // Failure("unknown")
      * ```
      */
     inline fun <E2> mapError(f: (E) -> E2): Result<T, E2> =
@@ -156,7 +156,6 @@ sealed class Result<out T, out E> {
         }
 
     /**
-     *
      * Applies the supplied function if this is a [Success]
      *
      * @param f: the function to apply
@@ -178,7 +177,6 @@ sealed class Result<out T, out E> {
         }
 
     /**
-     *
      * Applies the supplied function if this is a [Failure]
      *
      * @param f: the function to apply
@@ -199,7 +197,6 @@ sealed class Result<out T, out E> {
         }
 
     /**
-     *
      * Applies the supplied functions to transform this Result
      *
      * @param onSuccess: The function to apply for a [Success]
@@ -217,7 +214,6 @@ sealed class Result<out T, out E> {
         }
 
     /**
-     *
      * Applies the supplied status to this result
      *
      * @param passedStatus: The [Passed] status to apply if success
@@ -306,23 +302,15 @@ sealed class Result<out T, out E> {
  * @param status : Optional status as [Passed]
  *
  * Java note: `Result<out T, out E>`'s covariance and the `Nothing` in `Result<T, Nothing>` below
- * are Kotlin-only concepts with no fix possible for Java — `out` shows up as wildcard-bounded
+ * are Kotlin-only concepts with no fix possible for Java. `out` shows up as wildcard-bounded
  * generics (`Result<? extends T, ? extends E>`), and `Nothing` as an uninstantiable type
- * parameter. Not a bug, just an unavoidable friction point; documented rather than "solved," same
+ * parameter. Not a bug, just an unavoidable friction point, documented rather than "solved," same
  * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
  *
- * JS/TS notes (confirmed against the actual generated `.d.ts`, not assumed):
- * 1. Covariance is a non-issue here — `out T`/`out E` erase to plain, non-wildcarded TS generics
- *    (`Result<T, E>`), unlike Java's wildcard friction above. `Nothing` renders as TS's `never`.
- * 2. Extension functions (`flatMap`, `getOrElse`, etc., below) export as flat top-level functions
- *    taking the receiver as an explicit first parameter, not as callable methods on the value —
- *    TS callers write `kiit.result.flatMap(result, fn)`, not `result.flatMap(fn)`.
- * 3. `copy()`'s parameters become positional-optional in TS (`copy(value?, status?, action?)`),
- *    not named/destructured — skipping `value` to only override `status` isn't possible the way
- *    Kotlin's named-argument `copy(status = x)` allows; callers must pass `undefined` explicitly.
- * 4. Secondary constructors can't be exported as alternate `new X(...)` forms — JS classes only
- *    support one constructor. The `@JsName`d ones below become `static` factory methods instead
- *    (`Success.of(42)`, `Success.ofMessage(42, "msg")`), not `new Success(42)`.
+ * JS/TS note: covariance erases cleanly to plain TS generics. Extension functions (`flatMap`,
+ * `getOrElse`, etc.) export as flat top-level functions taking the receiver as an explicit first
+ * parameter, and the `@JsName`d secondary constructors below become `static` factory methods
+ * (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
  */
 @JsExport
 data class Success<out T>
@@ -335,7 +323,7 @@ data class Success<out T>
         // NOTE: These overloads are here for convenience + Java Interoperability
 
         /**
-         * Initialize using explicitly supplied message
+         * Initialize using just the value, defaulting to a [Succeeded.SUCCESS] status.
          * @param value : Value representing the success
          */
         @JsName("of")
@@ -344,10 +332,10 @@ data class Success<out T>
         /**
          * Initialize using explicitly supplied message
          * @param value : Value representing the success
-         * @param msg : Optional message for the status
+         * @param message : Optional message for the status
          */
         @JsName("ofMessage")
-        constructor(value: T, msg: String) : this(value, Status.ofStatus(msg, null, Succeeded.SUCCESS))
+        constructor(value: T, message: String) : this(value, Status.ofStatus(message, null, Succeeded.SUCCESS))
     }
 
 /**
@@ -367,7 +355,7 @@ data class Failure<out E>
         // NOTE: These overloads are here for convenience + Java Interoperability
 
         /**
-         * Initialize using explicitly supplied message
+         * Initialize using just the error, defaulting to an [Unserved.UNEXPECTED] status.
          * @param error : Error representing the failure
          */
         @JsName("of")
@@ -376,10 +364,10 @@ data class Failure<out E>
         /**
          * Initialize using explicitly supplied message
          * @param error : Error representing the failure
-         * @param msg : Optional message for the status
+         * @param message : Optional message for the status
          */
         @JsName("ofMessage")
-        constructor(error: E, msg: String) : this(error, Status.ofStatus(msg, null, Unserved.UNEXPECTED))
+        constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
     }
 
 /**
@@ -415,21 +403,16 @@ inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, 
     }
 
 /**
- * Applies supplied function `op` if this is a [Success]. The difference to flatMap / then is that the whole
- * Result is provided as an input
+ * Returns this if it's a [Success], or the supplied fallback [other] if this is a [Failure]
  *
- * @param op: The function to apply if this is a [Success]
+ * @param other: The fallback [Result] to return if this is a [Failure]
  *
- * # Example:
+ * # Example
  * ```
- * val result : Result<String,Err> = someOperation()
- * result.fold(
- *      { println( "operation succeeded" ) },
- *      { println( "operation failed"    ) }
- * )
+ * val r1 = Success("Superman").or(Success("Clark Kent"))  // Success("Superman")
+ * val r2 = Failure("Unknown" ).or(Success("Clark Kent"))  // Success("Clark Kent")
  * ```
  */
-
 @JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
@@ -448,18 +431,15 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
     }
 
 /**
- * Applies supplied function `op` if this is a [Success]. The difference to flatMap / then is that the whole
- * Result is provided as an input
+ * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
+ * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
  *
- * @param op: The function to apply if this is a [Success]
+ * @param op: The function to apply to this [Result] if this is a [Success]
  *
- * # Example:
+ * # Example
  * ```
- * val result : Result<String,Err> = someOperation()
- * result.fold(
- *      { println( "operation succeeded" ) },
- *      { println( "operation failed"    ) }
- * )
+ * val r1 = Success("Superman").operate { it }  // Success("Superman")
+ * val r2 = Failure("Unknown" ).operate { it }  // Failure("Unknown")
  * ```
  */
 @JsExport

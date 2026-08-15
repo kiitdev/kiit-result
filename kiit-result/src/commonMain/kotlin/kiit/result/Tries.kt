@@ -28,7 +28,8 @@ import kotlin.jvm.JvmStatic
 interface TryBuilder : Builder<Throwable> {
     override fun errorFromEx(ex: Throwable, defaultStatus: Status): Throwable = ex
 
-    override fun errorFromStr(msg: String?, defaultStatus: Status): Throwable = Throwable(msg ?: defaultStatus.message)
+    override fun errorFromStr(message: String?, defaultStatus: Status): Throwable =
+        Throwable(message ?: defaultStatus.message)
 
     override fun errorFromErr(err: Err, defaultStatus: Status): Throwable = Throwable(err.msg, err.cause)
 }
