@@ -11,13 +11,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * Exercises kiit-result from plain Java (not Kotlin) — guards the @JvmStatic/@JvmOverloads/
+ * Exercises kiit-result from plain Java (not Kotlin). Guards the @JvmStatic/@JvmOverloads/
  * @file:JvmName annotations and the sealed-hierarchy `permits` metadata that make the library
  * usable idiomatically from Java, mirroring kiit-codes' own JavaInteropTest.java. See
  * samples/sample-java/src/main/java/sample/SampleApp.java for the same surface as a runnable demo.
  *
  * Note: kiit-result depends on the *published* kiit-codes:0.2.1 artifact, which predates
- * kiit-codes' own Java-interop pass — so kiit-codes Status values are built via their public
+ * kiit-codes' own Java-interop pass, so kiit-codes Status values are built via their public
  * constructors below rather than via companion constants like `Succeeded.CREATED`. See
  * SampleApp.java's class-level comment for the full explanation.
  */
@@ -25,8 +25,8 @@ public class JavaInteropTest {
 
     @Test
     public void successConstructorHasOverloadsForConvenienceAndForJavaInterop() {
-        // 4 ways in from Java: bare value, value+msg (hand-rolled secondary), value+status (new
-        // @JvmOverloads-generated overload), full value+status+action (primary constructor).
+        // 4 ways in from Java: bare value, value+message (hand-rolled secondary), value+status
+        // (new @JvmOverloads-generated overload), full value+status+action (primary constructor).
         Success<Integer> bare = new Success<>(42);
         assertEquals(Integer.valueOf(42), bare.getValue());
         assertEquals("SUCCESS", bare.getStatus().getName());
@@ -57,7 +57,7 @@ public class JavaInteropTest {
 
     @Test
     public void resultSealedHierarchySupportsExhaustiveSwitchPatternMatching() {
-        // JDK 21 pattern-matching switch, exhaustive with no `default` — only compiles because
+        // JDK 21 pattern-matching switch, exhaustive with no `default`. Only compiles because
         // Result/Success/Failure are sealed and Kotlin emitted PermittedSubclasses at jvmTarget 21.
         Result<Integer, String> success = new Success<>(1);
         Result<Integer, String> failure = new Failure<>("boom");
@@ -67,7 +67,7 @@ public class JavaInteropTest {
 
     @Test
     public void passedAndFailedGroupsSupportExhaustiveSwitchPatternMatching() {
-        // Overload resolution picks the right 4-leaf switch based on the static type — Passed for
+        // Overload resolution picks the right 4-leaf switch based on the static type: Passed for
         // a Success's status, Failed for a Failure's.
         Passed pending = new Passed.Pending("QUEUED", "The request is waiting to be processed.", "kiit");
         Failed unserved = new Failed.Unserved("TIMEOUT", "The operation timed out.", "kiit");
@@ -87,8 +87,8 @@ public class JavaInteropTest {
 
     @Test
     public void actionsFacadeAndWithActionHaveNoChainArgOverload() {
-        // @file:JvmName("Actions") on Action.kt — Java sees kiit.result.Actions, not ActionKt.
-        // @JvmOverloads on withAction — Java gets a no-`chain`-arg overload defaulting to true.
+        // @file:JvmName("Actions") on Action.kt: Java sees kiit.result.Actions, not ActionKt.
+        // @JvmOverloads on withAction: Java gets a no-`chain`-arg overload defaulting to true.
         Result<Integer, String> bare = new Success<>(42);
         Result<Integer, String> chained = Actions.withAction(bare, new Action("step2"));
         assertEquals("step2", chained.getAction().getAction());
@@ -96,10 +96,10 @@ public class JavaInteropTest {
 
     @Test
     public void resultsFacadeExposesTopLevelExtensionFunctions() {
-        // @file:JvmName("Results") on Result.kt — Java sees kiit.result.Results, not ResultKt.
+        // @file:JvmName("Results") on Result.kt: Java sees kiit.result.Results, not ResultKt.
         // Explicit type witness needed: Result<out T, out E>'s covariance shows up as
         // wildcard-bounded generics in the compiled signature, which confuses Java's inference of
-        // the lambda parameter's type otherwise — documented, unfixable Java friction.
+        // the lambda parameter's type otherwise. Documented, unfixable Java friction.
         Success<Integer> bare = new Success<>(42);
         Result<Integer, String> mapped = Results.<Integer, Integer, String>flatMap(bare, v -> new Success<>(v + 1));
         assertEquals(Integer.valueOf(43), ((Success<Integer>) mapped).getValue());
@@ -111,7 +111,7 @@ public class JavaInteropTest {
 
     @Test
     public void outcomesTriesAndOptionsHaveStaticEntryPoints() {
-        // @JvmStatic on Outcomes/Tries/Options' own directly-declared members — no `.INSTANCE`
+        // @JvmStatic on Outcomes/Tries/Options' own directly-declared members, no `.INSTANCE`
         // needed. The inherited Builder/PassedBuilder/FailedBuilder surface (success/restricted/
         // etc.) stays Outcomes.INSTANCE-only for now, a deliberately deferred, documented gap.
         Result<Integer, Err> attempted = Outcomes.attempt("chargeCard", () -> 100);
@@ -131,7 +131,7 @@ public class JavaInteropTest {
 
     @Test
     public void resultCompanionAttemptAndOutcomeAreStatic() {
-        // @JvmStatic on Result.Companion.attempt/outcome — called as Result.attempt(...) /
+        // @JvmStatic on Result.Companion.attempt/outcome: called as Result.attempt(...) /
         // Result.outcome(...) directly, not Result.Companion.attempt(...).
         Result<Integer, Throwable> tried = Result.attempt(() -> 3);
         assertEquals(Integer.valueOf(3), tried.getOrNull());

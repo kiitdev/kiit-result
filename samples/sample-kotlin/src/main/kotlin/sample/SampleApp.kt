@@ -20,14 +20,14 @@ fun testSample1() {
     report("authorize alice as bob", service.authorize("alice", "bob"))
     report("authorize unknown user", service.authorize("carol", "carol"))
 
-    // Result composition — map/onSuccess/onFailure chaining
+    // Result composition: map/onSuccess/onFailure chaining
     service.fetch("alice")
         .map { it.email }
         .onSuccess { println("alice's email: $it") }
         .onFailure { println("could not fetch alice: $it") }
 
-    // toTry() converts a Failure<Err> into a Failure<StatusException> (from kiit-codes) so it can
-    // cross a call boundary that only communicates via exceptions.
+    // toTry() converts a Failure<Err> into a Failure<StatusException> (from kiit-codes), so it
+    // can cross a call boundary that only communicates via exceptions.
     service.fetch("missing").toTry().onFailure { ex ->
         println("caught as exception: ${ex.message}")
     }

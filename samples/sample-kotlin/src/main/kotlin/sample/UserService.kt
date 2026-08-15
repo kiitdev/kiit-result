@@ -11,7 +11,7 @@ data class User(val id: String, val email: String)
 
 /**
  * A tiny service that returns an [Outcome] (Result<T, Err> from kiit-result) for every operation
- * instead of throwing for expected failures. Status categories come from kiit-codes.
+ * instead of throwing for expected failures. Status groups come from kiit-codes.
  */
 class UserService : OutcomeBuilder {
     private val users = mutableMapOf<String, User>()
