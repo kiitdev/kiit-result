@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 /**
  * Tests the Status taxonomy as seen through Result construction:
- * 1. the success flag per category
+ * 1. the success flag per group
  * 2. building Success/Failure with defaults, messages, and explicit statuses
  */
 class ResultStatusTests : ResultTestSupport {
@@ -21,7 +21,7 @@ class ResultStatusTests : ResultTestSupport {
     fun can_test_success() {
         assertEquals(true, Succeeded.SUCCESS.success)
         assertEquals(true, Pending.ACCEPTED.success)
-        // Excluded is a Passed category — an excluded item is still a success.
+        // Excluded is a Passed group, an excluded item is still a success.
         assertEquals(true, Excluded.SKIPPED.success)
         assertEquals(false, Invalid.BAD_REQUEST.success)
         assertEquals(false, Restricted.UNAUTHENTICATED.success)

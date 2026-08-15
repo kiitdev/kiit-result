@@ -30,7 +30,7 @@ interface ResultTestSupport {
     /**
      * Asserts [result] is a [Failure] with a status matching [expectedStatus] (or
      * [expectedStatusMsg], if the message was overridden), and an error value matching
-     * [expectedError] — either directly (`String`) or via [Err.ErrorInfo.message].
+     * [expectedError], either directly (`String`) or via [Err.ErrorInfo.message].
      */
     fun <T> ensureFailure(
         result: Result<T, *>,
