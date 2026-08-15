@@ -2,12 +2,10 @@ package sample
 
 import kiit.codes.CodesToHttp
 import kiit.codes.Err
-import kiit.codes.Invalid
-import kiit.result.Failure
 import kiit.result.Outcome
 import kiit.result.Outcomes
-import kiit.result.Success
 import kiit.result.Validated
+import kiit.result.Validations
 
 private val http = CodesToHttp()
 
@@ -55,11 +53,7 @@ fun validateUser(form: UserForm): Validated<UserForm> {
     if (!form.email.contains("@")) errors.add(Err.on("email", form.email, "Email must contain @"))
     if (form.phone.length != 10) errors.add(Err.on("phone", form.phone, "Phone must be 10 digits"))
 
-    return if (errors.isEmpty()) {
-        Success(form)
-    } else {
-        Failure(Err.ErrorList(errors, "Validation failed with ${errors.size} error(s)"), Invalid.INVALID_VALUE)
-    }
+    return Validations.of(form, errors)
 }
 
 fun testValidation() {
