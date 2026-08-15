@@ -1,8 +1,5 @@
 package kiit.result
 
-import kiit.codes.Checked
-import kiit.codes.Err
-import kiit.codes.Invalid
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -12,19 +9,8 @@ import kotlin.test.assertNull
  * and the Action-tagging overloads on [Outcomes].
  */
 class ActionTests {
-    fun validatePhone(phone: String): Result<String, Err> {
-        return when {
-            phone.isNotEmpty() -> Success(phone)
-            else -> Failure(
-                Err.on("phone", "too short"),
-                Invalid.INVALID_VALUE
-            )
-        }
-    }
-
     @Test
     fun can_attach_action_with_no_prior_action() {
-        val result = validatePhone("")
         val result = Success(42).withAction(Action("chargeCard", xid = "req-1"))
         assertEquals("chargeCard", result.action?.action)
         assertEquals("req-1", result.action?.xid)
