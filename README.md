@@ -43,7 +43,7 @@ Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://
 
 ## ℹ️ About
 
-**kiit.result** is a `Result<T, E>` type for Kotlin Multiplatform — similar to `Result` in Rust and Swift, or `Try` in Scala. It models the outcome of an operation as one of two branches, `Success<T>` or `Failure<E>`, each carrying an optional [kiit-codes](https://github.com/slatekit/kiit-codes) `Status` so a caller can inspect *why*, not just *whether*.
+**kiit.result** is a `Result<T, E>` type for Kotlin Multiplatform — similar to `Result` in Rust and Swift, or `Try` in Scala. It models the outcome of an operation as one of two branches, `Success<T>` or `Failure<E>`, each carrying an optional [kiit-codes](https://github.com/kiitdev/kiit-codes) `Status` so a caller can inspect *why*, not just *whether*.
 
 Modeling an operation this way means answering four separable questions, not one:
 
@@ -55,7 +55,7 @@ Modeling an operation this way means answering four separable questions, not one
 It builds directly on kiit-codes rather than reimplementing status classification:
 
 1. **A monadic `Result<T, E>`** — `map`, `flatMap`/`then`, `fold`, `onSuccess`/`onFailure`, `getOrElse`, and friends, so success/failure handling composes without manual `if`/`else` branching.
-2. **A flexible error type** — the `Failure` branch's error type `E` can be anything: `String`, `Throwable`, [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err`, or your own domain type. Type aliases (`Try<T>`, `Option<T>`, `Outcome<T>`) cover the common cases.
+2. **A flexible error type** — the `Failure` branch's error type `E` can be anything: `String`, `Throwable`, [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err`, or your own domain type. Type aliases (`Try<T>`, `Option<T>`, `Outcome<T>`) cover the common cases.
 3. **Status-aware builders** — `restricted`/`invalid`/`rejected`/`unserved`/`excluded` build a `Result` pre-populated with the matching kiit-codes status category, so you rarely construct `Success`/`Failure` by hand.
 
 ```kotlin
@@ -74,7 +74,7 @@ Returning `null` for "not found" loses the reason. Throwing for expected, recove
 
 ## 💡 The idea
 
-**A `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy**, instead of a bespoke or numeric status of its own. `Success` carries a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed` status (`Succeeded`, `Pending`, `Excluded`, `Information`); `Failure` carries a `Failed` status (`Restricted`, `Invalid`, `Rejected`, `Unserved`). Builders map each common case to its matching category, so `restricted()` gives you `Restricted.DENIED`, `invalid()` gives you `Invalid.INVALID_VALUE`, and so on — without hand-rolling a status object at every call site.
+**A `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy**, instead of a bespoke or numeric status of its own. `Success` carries a [kiit-codes](https://github.com/kiitdev/kiit-codes) `Passed` status (`Succeeded`, `Pending`, `Excluded`, `Information`); `Failure` carries a `Failed` status (`Restricted`, `Invalid`, `Rejected`, `Unserved`). Builders map each common case to its matching category, so `restricted()` gives you `Restricted.DENIED`, `invalid()` gives you `Invalid.INVALID_VALUE`, and so on — without hand-rolling a status object at every call site.
 
 ## 🚀 Quick start
 
@@ -175,7 +175,7 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`message`** | `result.status.message` — a convenience accessor on every `Result`. |
 | **`Option<T>`** | `Result<T, Unit>` — the historical role of `Option`/`Maybe` (Rust/Scala/Arrow), reimagined on `Result` so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the discoverable entry points. |
 | **`Try<T>`** | `Result<T, Throwable>` — exception as the error type. |
-| **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/slatekit/kiit-codes)' `Err` as the error type; the most commonly used alias. |
+| **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
 
 Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`, `getOrNull`, `getOrElse`, `onSuccess`, `onFailure`, `transform`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
@@ -199,7 +199,7 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 | `rejected(...)` | `Failed.Rejected` | `Rejected.RULE_VIOLATION` |
 | `unserved(...)` | `Failed.Unserved` | `Unserved.UNEXPECTED` |
 
-Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/slatekit/kiit-codes) `Passed.Excluded` status, not a failure. There's no separate `conflict()` — it's `rejected(status = Rejected.CONFLICT)`, since a conflict is just a specific `Rejected` outcome, not its own category.
+Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded/skipped item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/kiitdev/kiit-codes) `Passed.Excluded` status, not a failure. There's no separate `conflict()` — it's `rejected(status = Rejected.CONFLICT)`, since a conflict is just a specific `Rejected` outcome, not its own category.
 
 `Options` also adds `some(value)`/`none(...)` on top of the generic builders above — a discoverable `Some`/`None`-style pair for `Option<T>` specifically (see [Core concepts](#-core-concepts)). `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
 
@@ -227,7 +227,7 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 ## 🔁 Conversions
 
 - **`toOutcome()`** — converts any `Result<T, E>` to `Outcome<T>` (`Result<T, Err>`), building an `Err` from whatever the failure held (`String`, `Exception`, or an existing `Err`).
-- **`toTry()`** — converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a [kiit-codes](https://github.com/slatekit/kiit-codes) `StatusException` via `Failed.toException(errors)`, so the exception still carries the original status and error detail.
+- **`toTry()`** — converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a [kiit-codes](https://github.com/kiitdev/kiit-codes) `StatusException` via `Failed.toException(errors)`, so the exception still carries the original status and error detail.
 - **`Tries.of { ... }`** — the reverse direction: if the block throws a `StatusException` (`RestrictedException`/`InvalidException`/`RejectedException`/`UnservedException`), the resulting `Try` is built with the matching `restricted`/`invalid`/`rejected`/`unserved` status instead of a generic failure.
 
 ## 🛠️ Use cases
@@ -247,7 +247,7 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 
 **Probably not necessary if:**
 1. Exceptions already communicate everything you need, and you don't want the monadic-return-value style.
-2. You only need status classification, not a `Result` wrapper — in which case see [kiit-codes](https://github.com/slatekit/kiit-codes) on its own.
+2. You only need status classification, not a `Result` wrapper — in which case see [kiit-codes](https://github.com/kiitdev/kiit-codes) on its own.
 
 ## ❓ FAQ
 
@@ -297,7 +297,7 @@ val c = Tries.attempt { riskyCall() }     // Try<T>      — catches Throwable, 
 - [ ] Diagrams and a fuller FAQ, matching kiit-codes' README
 - [ ] `Raise<E>`-style DSL (`result { }` + `.bind()`) as a flat, non-nested alternative to `.then { }` chaining for multi-step composition — needs Kotlin context parameters, which are experimental as of 2.3.x and reach Stable in 2.4.0
 
-Track progress or open a discussion in [Issues](https://github.com/slatekit/kiit-result/issues).
+Track progress or open a discussion in [Issues](https://github.com/kiitdev/kiit-result/issues).
 
 ## 🤝 Contributing
 
