@@ -62,7 +62,7 @@ It builds directly on kiit-codes rather than reimplementing status classificatio
 val outcome: Outcome<User> = userService.create("alice", "alice@example.com")
 outcome.fold(
     { user -> println("created ${user.id}") },
-    { err -> println("failed: ${err.msg} (${outcome.status.name})") },
+    { err -> println("failed: ${err.message} (${outcome.status.name})") },
 )
 ```
 
@@ -117,7 +117,7 @@ import kiit.result.flatMap
 userService.create("alice", "alice@example.com")
     .map { it.email }
     .onSuccess { println("registered: $it") }
-    .onFailure { err -> println("could not register: ${err.msg}") }
+    .onFailure { err -> println("could not register: ${err.message}") }
 ```
 
 **Convert to a `Try<T>` to cross an exception-only boundary:**
@@ -184,8 +184,8 @@ Composition operators mirror what you'd expect from `Result`/`Either` in other l
 
 `Builder<E>` provides status-aware factory methods so you rarely build `Success`/`Failure` directly. It's composed from two smaller interfaces, one per branch, so each stays scoped to its own category constants (the same reason kiit-codes keeps `Succeeded`/`Restricted`/etc. constants on their own companions rather than one shared object):
 
-- **`PassedBuilder<E>`** — `success`/`pending`/`excluded`, each with 3 overloads: no-arg, `(value, msg: String? = null)`, and `(value, status)`.
-- **`FailedBuilder<E>`** — `restricted`/`invalid`/`rejected`/`unserved`, each with 5 overloads: no-arg, `(msg)`, `(ex, status?)`, `(err, status?)`, `(status)`.
+- **`PassedBuilder<E>`** — `success`/`pending`/`excluded`, each with 3 overloads: no-arg, `(value, message: String? = null)`, and `(value, status)`.
+- **`FailedBuilder<E>`** — `restricted`/`invalid`/`rejected`/`unserved`, each with 5 overloads: no-arg, `(message)`, `(ex, status?)`, `(err, status?)`, `(status)`.
 
 `Builder`/`PassedBuilder`/`FailedBuilder` live in `kiit.result.builders` — they're the extensible machinery you implement (directly, or via `Outcomes`/`Options`/`Tries`), not something most callers import directly. `Outcomes`/`Options`/`Tries` themselves stay in `kiit.result`, alongside `Result`/`Success`/`Failure`, since those are the ready-made, everyday API.
 

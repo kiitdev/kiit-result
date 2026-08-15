@@ -10,14 +10,14 @@ plugins {
     id("signing")
 }
 
-// Single source of truth for the published version — feeds Maven Central (below), the JS
+// Single source of truth for the published version. Feeds Maven Central (below), the JS
 // package.json (in the js(IR) block below), and the release workflow's printVersion task, so the
-// git tag, GitHub release, Maven artifact, and npm package version can never drift apart.
+// git tag, GitHub release, Maven artifact, and npm package version can never get out of sync.
 val libraryVersion = "0.2.1"
 
 kotlin {
     jvm {
-        // src/jvmTest/java (see JavaInteropTest) is compiled automatically — Kotlin's jvm()
+        // src/jvmTest/java (see JavaInteropTest) is compiled automatically. Kotlin's jvm()
         // target compiles Java sources by default, no withJava() needed.
         compilerOptions {
             // JVM 21 so Kotlin emits PermittedSubclasses for the sealed Result hierarchy,
@@ -40,7 +40,7 @@ kotlin {
         generateTypeScriptDefinitions()
 
         // Sets the npm-facing package identity, mirroring kiit-codes' js(IR) block. The raw
-        // compiled filenames stay "kiit-result-kiit-result.{js,d.ts}" — purely internal, since
+        // compiled filenames stay "kiit-result-kiit-result.{js,d.ts}", purely internal, since
         // package.json's "main"/"types" fields already point at them and consumers only ever
         // interact via `import { kiit } from '@kiit/result'`.
         compilations["main"].packageJson {
@@ -58,10 +58,10 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // api, not implementation — kiit-result's public API (Result.status, Outcome<T>'s Err
+            // api, not implementation. kiit-result's public API (Result.status, Outcome<T>'s Err
             // type param, etc.) directly exposes kiit-codes types, so consumers need them
             // transitively on their own compile classpath.
-            api("dev.kiit:kiit-codes:0.2.1")
+            api("dev.kiit:kiit-codes:1.0.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -69,7 +69,7 @@ kotlin {
     }
 }
 
-// Disabled: SKIE's default analytics upload sends git/hardware/project data to Touchlab — off
+// Disabled: SKIE's default analytics upload sends git/hardware/project data to Touchlab, off
 // until that's something we explicitly want, not because it's a default worth silently keeping.
 skie {
     analytics {
@@ -133,7 +133,7 @@ mavenPublishing {
 }
 
 // Kotlin's jvm() target compiles Java sources by default (see the jvm{} block above), but the
-// resulting JavaCompile tasks don't inherit jvmTarget automatically — point them at a JDK 21
+// resulting JavaCompile tasks don't inherit jvmTarget automatically. Point them at a JDK 21
 // toolchain (auto-provisioned via the foojay resolver in settings.gradle.kts if not installed
 // locally) so src/jvmTest/java can use JDK 21 syntax (e.g. pattern-matching switch).
 tasks.withType<JavaCompile>().configureEach {
@@ -146,7 +146,7 @@ tasks.withType<JavaCompile>().configureEach {
     }
 }
 
-// The compiled jvmTest classes are now JDK 21 bytecode (see above) — run them on a matching JVM.
+// The compiled jvmTest classes are now JDK 21 bytecode (see above), run them on a matching JVM.
 tasks.named<Test>("jvmTest") {
     javaLauncher.set(
         javaToolchains.launcherFor {

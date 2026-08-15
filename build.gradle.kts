@@ -1,4 +1,4 @@
-// Root aggregator — no dependencies of its own.
+// Root aggregator, no dependencies of its own.
 // The library lives in :kiit-result, demo apps live under :samples.
 plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false

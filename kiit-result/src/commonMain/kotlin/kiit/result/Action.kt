@@ -20,7 +20,7 @@ import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 
 /**
- * Describes the operation that produced a [Result] — the "what were we doing" complement to
+ * Describes the operation that produced a [Result]: the "what were we doing" complement to
  * [kiit.codes.Status] (the kind of outcome) and the error/value payload (the detail). Attach via
  * [withAction]; supported on both [Success] and [Failure], though it's most useful on failures for
  * pinpointing where in a call chain something went wrong.
