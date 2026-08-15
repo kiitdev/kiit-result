@@ -37,10 +37,10 @@ class ResultBuilderTests : ResultTestSupport, OutcomeBuilder {
     @Test
     fun can_build_excluded() {
         // Excluded is a Passed group, an excluded item is a success, not a failure.
-        val status = Excluded.SKIPPED
+        val status = Excluded.OMITTED
         ensureSuccess(excluded<Int>(), status, null)
         ensureSuccess(excluded(42), status, 42)
-        ensureSuccess(excluded(42, "skipped-x"), status, 42, "skipped-x")
+        ensureSuccess(excluded(42, "omitted-x"), status, 42, "omitted-x")
         ensureSuccess(excluded(42, status), status, 42)
     }
 
