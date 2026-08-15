@@ -33,6 +33,6 @@ jobs:
 
       # JS/TS interop annotations were added (see samples/sample-ts), but JS/TS support is not a
       # priority right now (no compiler-enforced exhaustiveness over Kotlin sealed hierarchies in
-      # TS, among other limitations) — deliberately not gated in CI for this pass.
+      # TS, among other limitations), deliberately not gated in CI for this pass.
       # - name: JS tests (commonTest, Node)
       #   run: ./gradlew :kiit-result:jsNodeTest
