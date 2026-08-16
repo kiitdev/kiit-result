@@ -5,8 +5,8 @@
 A type for representing the result of an operation, capturing either a success or failure with a value or error details, with optional support for a taxonomy of status codes.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
-[![Build](https://img.shields.io/github/actions/workflow/status/slatekit/kiit-result/ci.yml?branch=main)](https://github.com/slatekit/kiit-result/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/slatekit/kiit-result)](./LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/kiitdev/kiit-result)](./LICENSE)
 [![Kotlin](https://img.shields.io/badge/kotlin-multiplatform-purple.svg)](https://kotlinlang.org)
 
 Part of the [Kiit](https://www.kiit.dev) framework · [kiit.dev/result](https://www.kiit.dev/result) · [Blog post](#) · [Video walkthrough](#)

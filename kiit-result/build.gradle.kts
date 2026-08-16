@@ -125,9 +125,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = "https://github.com/slatekit/kiit-result"
-            connection = "scm:git:git://github.com/slatekit/kiit-result.git"
-            developerConnection = "scm:git:ssh://git@github.com/slatekit/kiit-result.git"
+            url = "https://github.com/kiitdev/kiit-result"
+            connection = "scm:git:git://github.com/kiitdev/kiit-result.git"
+            developerConnection = "scm:git:ssh://git@github.com/kiitdev/kiit-result.git"
         }
     }
 }
