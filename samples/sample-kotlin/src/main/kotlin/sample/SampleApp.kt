@@ -2,8 +2,11 @@ package sample
 
 import kiit.codes.CodesToHttp
 import kiit.codes.Err
+import kiit.codes.Invalid
+import kiit.result.Failure
 import kiit.result.Outcome
 import kiit.result.Outcomes
+import kiit.result.Success
 import kiit.result.Validated
 import kiit.result.Validations
 
@@ -14,6 +17,20 @@ fun main() {
     testValidation()
     testService()
 }
+
+// Single-error validation with Outcome<T> (Result<T, Err>): picks a different status group
+// depending on why the phone number failed, mirroring kiit-codes' Checked-based validatePhone,
+// but built on kiit-result's Result instead.
+fun validatePhone(phone: String): kiit.result.Result<String, Err> {
+    return when {
+        phone.isNotEmpty() -> Success(phone)
+        else -> Failure(
+            Err.on("phone", phone, "Too short"),
+            Invalid.INVALID_VALUE
+        )
+    }
+}
+
 
 // Single-error validation with Outcome<T> (Result<T, Err>): picks a different status group
 // depending on why the phone number failed, mirroring kiit-codes' Checked-based validatePhone,
