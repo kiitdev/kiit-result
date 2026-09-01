@@ -3,9 +3,7 @@ package sample;
 import kiit.codes.Err;
 import kiit.codes.Failed;
 import kiit.codes.Passed;
-import kiit.codes.Restricted;
 import kiit.codes.Status;
-import kiit.codes.Succeeded;
 import kiit.result.Action;
 import kiit.result.Actions;
 import kiit.result.Failure;
@@ -35,7 +33,9 @@ public class SampleApp {
         // pre-existing hand-rolled convenience constructors, four ways to build a Success now.
         Success<Integer> bare = new Success<>(42);
         Success<Integer> withMessage = new Success<>(42, "created via convenience overload");
-        Passed created = Succeeded.CREATED;
+        // Fully-qualified: kiit-codes' `Succeeded` is a Kotlin typealias for `Passed.Succeeded`,
+        // and typealiases are erased at the bytecode level, so Java can't import or see them.
+        Passed created = Passed.Succeeded.CREATED;
         Success<Integer> withStatus = new Success<>(42, created);
         Success<Integer> full = new Success<>(42, created, new Action("createUser"));
         System.out.println("bare: " + bare.getValue() + " status=" + bare.getStatus().getName());
@@ -43,7 +43,7 @@ public class SampleApp {
         System.out.println("full: " + full.getAction().getAction());
 
         Failure<String> failBare = new Failure<>("boom");
-        Failed denied = Restricted.DENIED;
+        Failed denied = Failed.Restricted.DENIED;
         Failure<String> failWithStatus = new Failure<>("boom", denied);
         System.out.println("failBare status: " + failBare.getStatus().getName());
         System.out.println("failWithStatus status: " + failWithStatus.getStatus().getName());
