@@ -5,9 +5,9 @@
 
 # kiit-result
 
-**A Kotlin `Result<T, E>` type built on kiit-codes' status taxonomy.**
+**A Kotlin `Result<T, E>` type where `Success` holds a value and `Failure` holds an error, each also carrying a status from kiit-codes' taxonomy.**
 
-A type for representing the result of an operation, capturing either a success or failure with a value or error details, with optional support for a taxonomy of status codes.
+Optionally attach an `Action` to trace which operation produced a result across nested or chained calls.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
