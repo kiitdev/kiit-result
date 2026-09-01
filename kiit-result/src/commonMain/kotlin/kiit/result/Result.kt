@@ -1,5 +1,4 @@
 /** url: www.kiit.dev */
-@file:JvmName("Results")
 @file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class)
 
 package kiit.result
@@ -16,7 +15,6 @@ import kotlin.js.ExperimentalJsStatic
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.JsStatic
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
@@ -298,9 +296,9 @@ sealed class Result<out T, out E> {
  * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
  *
  * JS/TS note: covariance erases cleanly to plain TS generics. Extension functions (`flatMap`,
- * `getOrElse`, etc.) export as flat top-level functions taking the receiver as an explicit first
- * parameter, and the `@JsName`d secondary constructors below become `static` factory methods
- * (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
+ * `getOrElse`, etc., in `ResultOps.kt`) export as flat top-level functions taking the receiver as
+ * an explicit first parameter, and the `@JsName`d secondary constructors below become `static`
+ * factory methods (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
  */
 @JsExport
 data class Success<out T>
@@ -359,169 +357,3 @@ data class Failure<out E>
         @JsName("ofMessage")
         constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
     }
-
-/**
- * Applies supplied function `f` if this is a [Success]
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").flatMap { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMap { Success("???")        }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T2, E> = this.then(f)
-
-/**
- * Applies supplied function `f` if this is a [Success]
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").then { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).then { Success("???")        }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, E> =
-    when (this) {
-        is Success -> f(this.value)
-        is Failure -> this
-    }
-
-/**
- * Returns this if it's a [Success], or the supplied fallback [other] if this is a [Failure]
- *
- * @param other: The fallback [Result] to return if this is a [Failure]
- *
- * # Example
- * ```
- * val r1 = Success("Superman").or(Success("Clark Kent"))  // Success("Superman")
- * val r2 = Failure("Unknown" ).or(Success("Clark Kent"))  // Success("Clark Kent")
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
-    return when (this) {
-        is Success -> this
-        is Failure -> other
-    }
-}
-
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
-    when (this) {
-        is Success -> other
-        is Failure -> this
-    }
-
-/**
- * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
- * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
- *
- * @param op: The function to apply to this [Result] if this is a [Success]
- *
- * # Example
- * ```
- * val r1 = Success("Superman").operate { it }  // Success("Superman")
- * val r2 = Failure("Unknown" ).operate { it }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
-    return when (this) {
-        is Success -> op(this)
-        is Failure -> this
-    }
-}
-
-/**
- * Applies supplied function `f` if this is a [Failure] to transform the error type
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").flatMapError { "Clark Kent" }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMapError { "???"        }  // Failure("???")
- * ```
- */
-@JsExport
-inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
-    when (this) {
-        is Success -> this
-        is Failure -> f(this.error)
-    }
-
-/**
- * Returns the value from this [Success] or the result of applying `f` to the error if [Failure]
- *
- * # Example
- * ```
- * Success("Superman").getOrElse { "???" }      // "Superman"
- * Failure("Unknown" ).getOrElse { it }         // "Unknown"
- * ```
- */
-@JsExport
-inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
-    when (this) {
-        is Success -> this.value
-        is Failure -> f(this.error)
-    }
-
-/**
- * Gets the inner value in a nested Result
- *
- * # Example
- * ```
- * val r1 = Success(Success("Superman")).inner() // Success("Superman")
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
-
-/**
- * Returns true if this is a [Success] with the value supplied, or false otherwise
- *
- * # Example
- * ```
- * Success(42).contains(42) // true
- * Success(40).contains(42) // false
- * Failure(39).contains(42) // false
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
-    when (this) {
-        is Success -> i == this.value
-        is Failure -> false
-    }
-
-/**
- * Builds a Result as a [Success] with the value supplied
- *
- * # Example
- * ```
- * 42.success() // Success(42)
- * ```
- */
-@JsExport
-fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
-
-/**
- * Builds a Result as a [Failure] with the value supplied
- *
- * # Example
- * ```
- * 400.failure() // Failure(400)
- * ```
- */
-@JsExport
-fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)

@@ -1,0 +1,188 @@
+/** url: www.kiit.dev */
+@file:JvmName("Results")
+@file:OptIn(ExperimentalJsExport::class)
+
+package kiit.result
+
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
+import kotlin.jvm.JvmName
+
+/*
+ * Operators on [Result] that must be top-level extension functions rather than members of the
+ * sealed class, because [Result] is declared `Result<out T, out E>`. Kotlin's declaration-site
+ * variance rules forbid a covariant class type parameter from appearing as a bare value-parameter
+ * type, or being reused inside the return type of a parameter lambda, in a *member* function.
+ * Every function below hits one of those two shapes:
+ * - `or`/`and`/`contains` take `T`/`E` directly as a value parameter.
+ * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse` reuse `T`/`E` inside the return type
+ *   of a parameter lambda.
+ * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
+ *   function's receiver type can express.
+ */
+
+/**
+ * Applies supplied function `f` if this is a [Success]
+ *
+ * @param f: the function to apply
+ *
+ * # Example
+ * ```
+ * val r1 = Success("Superman").flatMap { Success("Clark Kent") }  // Success("Clark Kent")
+ * val r2 = Failure("Unknown" ).flatMap { Success("???")        }  // Failure("Unknown")
+ * ```
+ */
+@JsExport
+inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T2, E> = this.then(f)
+
+/**
+ * Applies supplied function `f` if this is a [Success]
+ *
+ * @param f: the function to apply
+ *
+ * # Example
+ * ```
+ * val r1 = Success("Superman").then { Success("Clark Kent") }  // Success("Clark Kent")
+ * val r2 = Failure("Unknown" ).then { Success("???")        }  // Failure("Unknown")
+ * ```
+ */
+@JsExport
+inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, E> =
+    when (this) {
+        is Success -> f(this.value)
+        is Failure -> this
+    }
+
+/**
+ * Returns this if it's a [Success], or the supplied fallback [other] if this is a [Failure]
+ *
+ * @param other: The fallback [Result] to return if this is a [Failure]
+ *
+ * # Example
+ * ```
+ * val r1 = Success("Superman").or(Success("Clark Kent"))  // Success("Superman")
+ * val r2 = Failure("Unknown" ).or(Success("Clark Kent"))  // Success("Clark Kent")
+ * ```
+ */
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
+    return when (this) {
+        is Success -> this
+        is Failure -> other
+    }
+}
+
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
+    when (this) {
+        is Success -> other
+        is Failure -> this
+    }
+
+/**
+ * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
+ * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
+ *
+ * @param op: The function to apply to this [Result] if this is a [Success]
+ *
+ * # Example
+ * ```
+ * val r1 = Success("Superman").operate { it }  // Success("Superman")
+ * val r2 = Failure("Unknown" ).operate { it }  // Failure("Unknown")
+ * ```
+ */
+@JsExport
+inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
+    return when (this) {
+        is Success -> op(this)
+        is Failure -> this
+    }
+}
+
+/**
+ * Applies supplied function `f` if this is a [Failure] to transform the error type
+ *
+ * @param f: the function to apply
+ *
+ * # Example
+ * ```
+ * val r1 = Success("Superman").flatMapError { "Clark Kent" }  // Success("Clark Kent")
+ * val r2 = Failure("Unknown" ).flatMapError { "???"        }  // Failure("???")
+ * ```
+ */
+@JsExport
+inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
+    when (this) {
+        is Success -> this
+        is Failure -> f(this.error)
+    }
+
+/**
+ * Returns the value from this [Success] or the result of applying `f` to the error if [Failure]
+ *
+ * # Example
+ * ```
+ * Success("Superman").getOrElse { "???" }      // "Superman"
+ * Failure("Unknown" ).getOrElse { it }         // "Unknown"
+ * ```
+ */
+@JsExport
+inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
+    when (this) {
+        is Success -> this.value
+        is Failure -> f(this.error)
+    }
+
+/**
+ * Gets the inner value in a nested Result
+ *
+ * # Example
+ * ```
+ * val r1 = Success(Success("Superman")).inner() // Success("Superman")
+ * ```
+ */
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
+
+/**
+ * Returns true if this is a [Success] with the value supplied, or false otherwise
+ *
+ * # Example
+ * ```
+ * Success(42).contains(42) // true
+ * Success(40).contains(42) // false
+ * Failure(39).contains(42) // false
+ * ```
+ */
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
+    when (this) {
+        is Success -> i == this.value
+        is Failure -> false
+    }
+
+/**
+ * Builds a Result as a [Success] with the value supplied
+ *
+ * # Example
+ * ```
+ * 42.success() // Success(42)
+ * ```
+ */
+@JsExport
+fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
+
+/**
+ * Builds a Result as a [Failure] with the value supplied
+ *
+ * # Example
+ * ```
+ * 400.failure() // Failure(400)
+ * ```
+ */
+@JsExport
+fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)
