@@ -193,4 +193,3 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
 @JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })
-
