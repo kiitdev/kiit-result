@@ -4,6 +4,7 @@
 
 package kiit.result
 
+import kiit.codes.Succeeded
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.jvm.JvmName
@@ -15,8 +16,8 @@ import kotlin.jvm.JvmName
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
  * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
- * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse` reuse `T`/`E` inside the return type
- *   of a parameter lambda.
+ * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse`, `recover` reuse `T`/`E` inside the
+ *   return type of a parameter lambda.
  * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
  * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare —
@@ -119,6 +120,27 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
     when (this) {
         is Success -> this
         is Failure -> f(this.error)
+    }
+
+/**
+ * Returns this unchanged if it's a [Success], or a new [Success] wrapping the result of applying
+ * [transform] to the error if this is a [Failure]. Unlike [flatMapError], which can still produce
+ * a [Failure], this unconditionally recovers. There's no lossless Failed→Passed status mapping, so
+ * the recovered branch defaults to [Succeeded.SUCCESS] — matching [Success]'s own single-value
+ * constructor default — while [Action] is preserved, since the operation identity continues
+ * across the recovery.
+ *
+ * # Example
+ * ```
+ * Success("Superman").recover { "???" }  // Success("Superman")
+ * Failure("Unknown" ).recover { "???" }  // Success("???")
+ * ```
+ */
+@JsExport
+inline fun <T, E> Result<T, E>.recover(transform: (E) -> T): Result<T, Nothing> =
+    when (this) {
+        is Success -> this
+        is Failure -> Success(transform(this.error), Succeeded.SUCCESS, this.action)
     }
 
 /**

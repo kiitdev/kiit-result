@@ -12,9 +12,9 @@ import kotlin.test.assertTrue
 
 /**
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
- * `onFailure`, `mapError`/`flatMapError`, `transform`, `getOrElse`/`getOr`/`getOrNull`/
- * `getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/`existsError`,
- * `contains`, and `inner`, on both the `Success` and `Failure` branch of each.
+ * `onFailure`, `mapError`/`flatMapError`, `recover`, `transform`, `getOrElse`/`getOr`/
+ * `getOrNull`/`getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/
+ * `existsError`, `contains`, and `inner`, on both the `Success` and `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test
@@ -107,6 +107,19 @@ class ResultFunctionalTests {
         val bad: Try<Int> = Failure(original)
         val thrown = assertFailsWith<IllegalStateException> { bad.getOrRethrow() }
         assertEquals(original, thrown)
+    }
+
+    @Test
+    fun can_recover() {
+        val result1 = success("peter parker")
+        val recovered1 = result1.recover { "???" }
+        assertEquals("peter parker", recovered1.getOrNull())
+
+        val result2 = unserved<String>("name unknown").withAction(Action("lookupName"))
+        val recovered2 = result2.recover { "???" }
+        assertEquals("???", recovered2.getOrNull())
+        assertEquals(Succeeded.SUCCESS, recovered2.status)
+        assertEquals("lookupName", recovered2.action?.action)
     }
 
     @Test
