@@ -13,7 +13,7 @@
  */
 import { kiit } from "@kiit/result";
 
-const { Success, Failure, Action, withAction } = kiit.result;
+const { Success, Failure, Action } = kiit.result;
 
 function assertNever(x: never): never {
     throw new Error("Unexpected object: " + x);
@@ -47,11 +47,12 @@ function describe(result: InstanceType<typeof Success<number>> | InstanceType<ty
 console.log("describe(bare):", describe(bare));
 console.log("describe(failBare):", describe(failBare));
 
-// Action / withAction: Kotlin's native default parameters render as genuine optional TS params,
-// so `new Action("chargeCard")` works directly with no overload multiplication needed the way
-// Java requires.
+// Action: Kotlin's native default parameters render as genuine optional TS params, so
+// `new Action("chargeCard")` works directly with no overload multiplication needed the way
+// Java requires. withAction is a member, not an extension, so it's a real method call here too,
+// unlike flatMap/getOrElse below.
 const action = new Action("chargeCard");
-const chained = withAction(bare, action);
+const chained = bare.withAction(action);
 console.log("chained action:", chained.action?.action);
 
 // Extension functions render as flat top-level functions taking the receiver as an explicit first

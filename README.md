@@ -5,9 +5,9 @@
 
 # kiit-result
 
-**A Kotlin `Result<T, E>` type built on kiit-codes' status taxonomy.**
+**A Kotlin `Result<T, E>` type where `Success` holds a value and `Failure` holds an error, each also carrying a status from kiit-codes' taxonomy.**
 
-A type for representing the result of an operation, capturing either a success or failure with a value or error details, with optional support for a taxonomy of status codes.
+Optionally attach an `Action` to trace which operation produced a result across nested or chained calls.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
@@ -165,7 +165,7 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
 
-Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`/`existsError`, `getOrNull`/`getErrorOrNull`, `getOrElse`/`getOr`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `onSuccess`, `onFailure`, `transform`, `recover`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
+Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`/`existsError`, `getOrNull`/`getErrorOrNull`, `getOrElse`/`getOr`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `onSuccess`, `onFailure`, `transform`, `recover`, `flatten` (flattens a nested `Result`), plus `or`/`and` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
 
 A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list into one `Result<List<T>, E>`, short-circuiting on the first `Failure`; `partition()` splits it into successes and errors; `allSuccess`/`allFailure`/`anySuccess`/`anyFailure` check the batch without building a new `Result`.
 

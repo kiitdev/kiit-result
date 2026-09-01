@@ -15,13 +15,13 @@ import kotlin.jvm.JvmName
  * variance rules forbid a covariant class type parameter from appearing as a bare value-parameter
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
- * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
- * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse`, `recover` reuse `T`/`E` inside the
- *   return type of a parameter lambda.
- * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
+ * - `or`/`and`/`getOr` take `T`/`E` directly as a value parameter.
+ * - `flatMap`/`then`, `orElse`, `getOrElse`, `recover` reuse `T`/`E` inside the return type of a
+ *   parameter lambda.
+ * - `flatten` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
  * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare.
- *   Same reasoning as `inner`, just a type-parameter bound instead of a shape.
+ *   Same reasoning as `flatten`, just a type-parameter bound instead of a shape.
  */
 
 /**
@@ -85,38 +85,20 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
     }
 
 /**
- * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
- * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
- *
- * @param op: The function to apply to this [Result] if this is a [Success]
- *
- * # Example
- * ```
- * val r1 = Success("guest"  ).operate { it }  // Success("guest")
- * val r2 = Failure("Unknown").operate { it }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
-    return when (this) {
-        is Success -> op(this)
-        is Failure -> this
-    }
-}
-
-/**
- * Applies supplied function `f` if this is a [Failure] to transform the error type
+ * Applies supplied function `f` if this is a [Failure] to transform the error type. Named to
+ * match Rust's `or_else` and kotlin-result's `orElse`, and to pair with [or] the same way
+ * [getOrElse] pairs with [getOr].
  *
  * @param f: the function to apply
  *
  * # Example
  * ```
- * val r1 = Success("guest"  ).flatMapError { Success("recovered") }  // Success("guest")
- * val r2 = Failure("timeout").flatMapError { Success("recovered") }  // Success("recovered")
+ * val r1 = Success("guest"  ).orElse { Success("recovered") }  // Success("guest")
+ * val r2 = Failure("timeout").orElse { Success("recovered") }  // Success("recovered")
  * ```
  */
 @JsExport
-inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
+inline fun <T, E, E2> Result<T, E>.orElse(f: (E) -> Result<T, E2>): Result<T, E2> =
     when (this) {
         is Success -> this
         is Failure -> f(this.error)
@@ -124,7 +106,7 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
 
 /**
  * Returns this unchanged if it's a [Success], or a new [Success] wrapping the result of applying
- * [transform] to the error if this is a [Failure]. Unlike [flatMapError], which can still produce
+ * [transform] to the error if this is a [Failure]. Unlike [orElse], which can still produce
  * a [Failure], this unconditionally recovers. There's no lossless Failed→Passed status mapping,
  * so the recovered branch defaults to [Succeeded.SUCCESS], matching [Success]'s own single-value
  * constructor default. [Action] is preserved, since the operation identity continues across the
@@ -201,53 +183,13 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
     }
 
 /**
- * Gets the inner value in a nested Result
+ * Flattens a nested [Result] into one, matching Rust's and kotlin-result's `flatten`.
  *
  * # Example
  * ```
- * val r1 = Success(Success("guest")).inner() // Success("guest")
+ * val r1 = Success(Success("guest")).flatten() // Success("guest")
  * ```
  */
 @JsExport
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
-
-/**
- * Returns true if this is a [Success] with the value supplied, or false otherwise
- *
- * # Example
- * ```
- * Success(42).contains(42) // true
- * Success(40).contains(42) // false
- * Failure(39).contains(42) // false
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
-    when (this) {
-        is Success -> i == this.value
-        is Failure -> false
-    }
-
-/**
- * Builds a Result as a [Success] with the value supplied
- *
- * # Example
- * ```
- * 42.success() // Success(42)
- * ```
- */
-@JsExport
-fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
-
-/**
- * Builds a Result as a [Failure] with the value supplied
- *
- * # Example
- * ```
- * 400.failure() // Failure(400)
- * ```
- */
-@JsExport
-fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)
+inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })

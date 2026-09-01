@@ -12,9 +12,9 @@ import kotlin.test.assertTrue
 
 /**
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
- * `onFailure`, `mapError`/`flatMapError`, `recover`, `transform`, `getOrElse`/`getOr`/
+ * `onFailure`, `mapError`/`orElse`, `recover`, `transform`, `getOrElse`/`getOr`/
  * `getOrNull`/`getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/
- * `existsError`, `contains`, and `inner`, on both the `Success` and `Failure` branch of each.
+ * `existsError`, and `flatten`, on both the `Success` and `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test
@@ -123,9 +123,9 @@ class ResultFunctionalTests {
     }
 
     @Test
-    fun can_get_inner() {
+    fun can_flatten() {
         val result1: Result<Result<String, Err>, Err> = Success(Success("peter parker"))
-        val i1 = result1.inner()
+        val i1 = result1.flatten()
         assertEquals("peter parker", i1.getOrNull())
     }
 
@@ -133,12 +133,6 @@ class ResultFunctionalTests {
     fun can_check_exists() {
         val result1 = success("peter parker")
         assertTrue(result1.exists { it == "peter parker" })
-    }
-
-    @Test
-    fun can_check_contains() {
-        val result1 = success("peter parker")
-        assertEquals(true, result1.contains("peter parker"))
     }
 
     @Test
@@ -214,9 +208,9 @@ class ResultFunctionalTests {
     }
 
     @Test
-    fun can_convert_error_via_flatMap() {
+    fun can_convert_error_via_orElse() {
         val result1 = unserved<String>("name unknown")
-        val result2 = result1.flatMapError { Failure(0) }
+        val result2 = result1.orElse { Failure(0) }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
         assertEquals(Unserved.UNEXPECTED.message, result2.message)
@@ -268,7 +262,7 @@ class ResultFunctionalTests {
                 .flatMap { Success(it + 1) }
 
         assertEquals("converted to int: 1", successValue)
-        assertTrue(result2.contains(2))
+        assertTrue(result2.exists { it == 2 })
 
         val finalValue = result2.fold({ "final value: $it" }, { "error : $it" })
         assertEquals("final value: 2", finalValue)
