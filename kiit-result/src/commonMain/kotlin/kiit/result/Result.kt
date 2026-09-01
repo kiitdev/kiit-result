@@ -459,19 +459,19 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
     }
 
 /**
- * Returns the value from this [Success] or the default value supplied if [Failure]
+ * Returns the value from this [Success] or the result of applying `f` to the error if [Failure]
  *
  * # Example
  * ```
- * Success("Superman").getOrElse("???")  // "Superman"
- * Failure("Unknown" ).getOrElse("???")  // "???"
+ * Success("Superman").getOrElse { "???" }      // "Superman"
+ * Failure("Unknown" ).getOrElse { it }         // "Unknown"
  * ```
  */
 @JsExport
-inline fun <T, E> Result<T, E>.getOrElse(f: () -> T): T =
+inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
     when (this) {
         is Success -> this.value
-        is Failure -> f()
+        is Failure -> f(this.error)
     }
 
 /**
@@ -479,7 +479,7 @@ inline fun <T, E> Result<T, E>.getOrElse(f: () -> T): T =
  *
  * # Example
  * ```
- * val r1 = Success(Success("Superman")).inner() // Success("Clark Kent")
+ * val r1 = Success(Success("Superman")).inner() // Success("Superman")
  * ```
  */
 @JsExport

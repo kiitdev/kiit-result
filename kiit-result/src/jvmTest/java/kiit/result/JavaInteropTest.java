@@ -105,7 +105,7 @@ public class JavaInteropTest {
         assertEquals(Integer.valueOf(43), ((Success<Integer>) mapped).getValue());
 
         Failure<String> failBare = new Failure<>("boom");
-        Integer orElse = Results.getOrElse(failBare, () -> -1);
+        Integer orElse = Results.getOrElse(failBare, (err) -> -1);
         assertEquals(Integer.valueOf(-1), orElse);
     }
 

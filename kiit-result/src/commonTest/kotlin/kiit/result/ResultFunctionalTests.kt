@@ -19,6 +19,9 @@ class ResultFunctionalTests {
     fun can_get_or_else() {
         val result1 = success("peter parker")
         assertEquals("peter parker", result1.getOrElse { "" })
+
+        val result2 = unserved<String>("name unknown")
+        assertEquals("name unknown", result2.getOrElse { err -> err.message })
     }
 
     @Test
