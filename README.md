@@ -14,7 +14,7 @@ A type for representing the result of an operation, capturing either a success o
 [![License](https://img.shields.io/github/license/kiitdev/kiit-result)](./LICENSE)
 [![Kotlin](https://img.shields.io/badge/kotlin-multiplatform-purple.svg)](https://kotlinlang.org)
 
-Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/result) · [Blog](#)
+Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/docs/kiit-result)
 
 </div>
 
@@ -31,11 +31,10 @@ Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/result) · [
 | 5 | 🔁 | [Conversions](#conversions) | Converting between `Outcome`, `Try`, and exceptions |
 | 6 | ⚙️ | [Usage](#usage) | Use cases, and when (not) to reach for this |
 | 7 | 🗺️ | [Roadmap](#roadmap) | Planned improvements and future work |
-| 8 | 📖 | [Learn More](#learn-more) | Deeper documentation and design topics |
-| 9 | ❓ | [FAQ](#faq) | Design rationale, comparisons, adoption, and maturity |
-| 10 | 📋 | [Requirements](#requirements) | Platforms and dependencies |
-| 11 | 🤝 | [Contributing](#contributing) | Build, test, and contribute |
-| 12 | 📄 | [License](#license) | Apache 2.0 license |
+| 8 | 📖 | [Learn More](#learn-more) | Deeper documentation, design rationale, and FAQ on kiit.dev |
+| 9 | 📋 | [Requirements](#requirements) | Platforms and dependencies |
+| 10 | 🤝 | [Contributing](#contributing) | Build, test, and contribute |
+| 11 | 📄 | [License](#license) | Apache 2.0 license |
 
 ## Why
 
@@ -166,7 +165,9 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
 
-Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`, `getOrNull`, `getOrElse`, `onSuccess`, `onFailure`, `transform`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
+Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`/`existsError`, `getOrNull`/`getErrorOrNull`, `getOrElse`/`getOr`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `onSuccess`, `onFailure`, `transform`, `recover`, `contains`, `inner` (flattens a nested `Result`), plus `or`/`and`/`operate` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
+
+A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list into one `Result<List<T>, E>`, short-circuiting on the first `Failure`; `partition()` splits it into successes and errors; `allSuccess`/`allFailure`/`anySuccess`/`anyFailure` check the batch without building a new `Result`.
 
 ## Builders
 
@@ -241,7 +242,7 @@ val d = Validations.of(form, errorsFound)       // Validated<T>  — Success if 
 
 ## Roadmap
 
-kiit-result has been extracted from kiit framework and polished as a standalone module.
+kiit-result has been extracted from the Kiit toolkit and polished as a standalone module.
 This has been used in production for over 4+ years to power mobile and server kotlin applications.
 Current work is focused on the Kotlin release, documentation, examples, and ecosystem integration.
 
@@ -257,43 +258,13 @@ See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current w
 
 | # | Topic | Description |
 |---:|---|---|
-| 1 | **Concepts** | Explore `Result`/`Success`/`Failure`, `Action`, and every type alias in depth. [Read the concepts docs](https://www.kiit.dev/docs/result/concepts). |
-| 2 | **Builders** | Learn how the status-aware builders work and how to implement your own `Builder<E>`. [Read the builders docs](https://www.kiit.dev/docs/result/builders). |
-| 3 | **Conversions** | See every conversion between `Result`, `Outcome`, `Try`, and kiit-codes' `StatusException`. [Read the conversions docs](https://www.kiit.dev/docs/result/conversions). |
-| 4 | **Validation** | Learn how `Validated<T>` and `Validations` accumulate multiple errors instead of stopping at the first. [Read the validation docs](https://www.kiit.dev/docs/result/validation). |
-| 5 | **Codes** | See the separate `kiit-codes` module this library builds its status taxonomy on top of. [Read the kiit-codes docs](https://www.kiit.dev/docs/codes). |
-
-## FAQ
-
-| Question | Answer |
-|---|---|
-| **Philosophy & Design** | |
-| Why not just use Arrow's `Either`/`Validated` or kotlin-result? | Those give you a monad with zero built-in taxonomy — you supply the meaning yourself. kiit-result is the same kind of monad fused to kiit-codes' taxonomy, so you get consistency across a codebase without every team inventing its own status vocabulary. A different bet, not a "better generic Result." |
-| Why does `Success` carry a status too, not just `Failure`? | Most Result types treat success as inert — just a value. Here `Success.status: Passed` distinguishes "succeeded," "succeeded but pending," and "succeeded but excluded" instead of flattening them all to `true`. |
-| Why is `E` still fully generic instead of locked to kiit-codes' `Err`? | So `Try<T>`, `Option<T>`, `Outcome<T>`, and `Validated<T>` can all share one `Result<T, E>` rather than needing separate types. The cost is nothing ties `Failure.status` to `Failure.error` at compile time — deliberately accepted, not fixed. |
-| Doesn't decoupling `status` from `error` risk them disagreeing? | Yes, narrowly — only if you bypass the builders or explicitly override `status` against an unrelated `error`. The ergonomic path (`restricted(err)`, etc.) already pairs them correctly by default. |
-| Why two ways to build a value (constructor vs. `Builder<E>`) instead of one? | They serve different situations: the constructor is for no-ceremony construction with no `Builder` in scope; `Builder<E>` is the status-aware convenience path when implementing `Outcomes`/`Options`/`Tries` or your own class. |
-| **Comparisons & Alternatives** | |
-| How is this different from Kotlin's own `kotlin.Result`? | stdlib `Result` has one type param and always uses `Throwable` as the error; it isn't a sealed hierarchy meant for pattern matching. kiit-result is a real two-branch sealed type with a flexible error type and a status on both branches. |
-| Isn't `Option<T> = Result<T, Unit>` a strange use of the name "Option"? | It's a deliberate lineage, not a misuse — the same historical role as Rust/Scala/Arrow's `Option` (standing in for a nullable value), reimagined so absence carries a `status` explaining why instead of a bare `None`. `Options.some(value)`/`Options.none()` make that explicit. |
-| Is this tied to HTTP or web APIs? | No — it's a universal classification usable at any layer (service call, job step, CLI command), validated against HTTP and gRPC as an external sanity check, not derived from either. |
-| **API & Design Details** | |
-| Why is there no `conflict()` builder? | It was just `rejected()` with `Rejected.CONFLICT` as the default status — not its own category. Use `rejected(status = Rejected.CONFLICT)`. |
-| Why did `denied`/`ignored` become `restricted`/`excluded`? | To match kiit-codes' actual group names (`Restricted`, `Excluded`) instead of carrying forward older, inconsistent naming. |
-| Why does `excluded()` build a `Success`, not a `Failure`? | `Excluded` is a `Passed` group in kiit-codes — an intentionally skipped/deduplicated/disqualified item isn't a failure. |
-| Why is `Builder<E>` split into `PassedBuilder`/`FailedBuilder`? | Keeps each interface's surface scoped to one branch — the same reason kiit-codes keeps each group's constants on its own companion rather than one shared object. |
-| Do I have to pick a specific `Status` every time I use a builder? | No — the group builders (`restricted`, `invalid`, `rejected`, `unserved`, and `pending`/`excluded`/`information` on the success side) all apply a sensible default when you don't supply one. You only reach for an explicit status when the default doesn't fit (`restricted(status = Restricted.LOCKED)`) — routine use never requires touching `Status` directly. |
-| Whatever happened to the numeric status code? | Dropped, mirroring kiit-codes' own removal — an earlier version had one and it invited the wrong inference (looks like an HTTP code, isn't). Get a protocol code on demand via `CodesToHttp`/`CodesToGrpc`. |
-| **Adoption in Practice** | |
-| Can I use my own error type and ignore kiit-codes? | Only partially — `E` is generic (use `Throwable`, `String`, your own type), but `Success.status`/`Failure.status` are hard-typed to kiit-codes' `Passed`/`Failed`. There's no way to use `Result<T, E>` without a kiit-codes status on every branch. |
-| What if my team already has its own status conventions? | Not an overnight replacement — existing statuses can map into the taxonomy incrementally. |
-| Does this actually work on JS and iOS today? | Worth being precise here: kiit-result's production history is JVM/Android — JS and iOS/Swift are new targets with no production history yet, not just "unexercised" versions of something proven. JS/TS is a deliberately **partial** pass — `Result`/`Success`/`Failure`/`Action`/the builder interfaces are `@JsExport`ed, but it's not CI-gated or published to npm (see `samples/sample-ts`), since TypeScript can't compiler-enforce exhaustiveness the way Kotlin/Java/Swift can. iOS uses [SKIE](https://skie.touchlab.co/) for real, compiler-enforced Swift exhaustiveness (see `samples/sample-swift`) — a materially better story than JS here, including plain Kotlin `object`s (`Outcomes`/`Options`/`Tries`) getting clean `.shared` access with no extra work, unlike JS. |
-| **The AI Angle** | |
-| Is the "built for AI" angle just marketing? | Same answer as kiit-codes gives, extended to the `Result` layer: the design choices are justified on ordinary engineering grounds first — exhaustive branching, a small fixed vocabulary, fewer decisions per call site. AI tooling benefits from the same properties any consistent codebase does, but the library stands on its own without that framing. |
-| What's the actual theory? | A closed `Success`/`Failure` split with a fixed, named-category vocabulary (`restricted`/`invalid`/`rejected`/`unserved`/`excluded`) gives an AI generating or reading code a small, predictable set of shapes to reach for, instead of guessing at ad hoc exception types or boolean flags per call site — and Kotlin's compiler-enforced exhaustive `when` over `Success`/`Failure` means a branch can't be silently missed, by a human or a model. Better accuracy, searchability, and standardization across a codebase are the claimed benefits — not proven, and intentionally modest about that, same as kiit-codes. |
-| **Maturity & Trust** | |
-| Is this production-ready at 1.0.0? | The version reflects the *standalone repo's* age, not the design's — this `Result<T, E>` pattern, paired with a status taxonomy, has been running in production for years across both mobile and server applications inside the original kiit framework. What's actually new: extraction into an independent repo, decoupled from the kiit monorepo; an updated and polished taxonomy in kiit-codes; and `kiit-codes`/`kiit-result` now being fully decoupled from each other where they were previously coupled in one module. The multiplatform export work is the one piece that's genuinely in progress, not battle-tested. |
-| What about single-maintainer risk? | Real, worth being upfront about — Apache 2.0, source available, no second maintainer or organizational backing yet. |
+| 1 | **Concepts** | Explore `Result`/`Success`/`Failure`, `Action`, and every type alias in depth. [Read the concepts docs](https://www.kiit.dev/docs/kiit-result#concepts). |
+| 2 | **Builders** | Learn how the status-aware builders work and how to implement your own `Builder<E>`. [Read the builders docs](https://www.kiit.dev/docs/kiit-result#builders). |
+| 3 | **Conversions** | See every conversion between `Result`, `Outcome`, `Try`, and kiit-codes' `StatusException`. [Read the conversions docs](https://www.kiit.dev/docs/kiit-result#conversions). |
+| 4 | **Validation** | Learn how `Validated<T>` and `Validations` accumulate multiple errors instead of stopping at the first. [Read the validation docs](https://www.kiit.dev/docs/kiit-result#validation). |
+| 5 | **Codes** | See the separate `kiit-codes` module this library builds its status taxonomy on top of. [Read the kiit-codes README](https://github.com/kiitdev/kiit-codes#readme). |
+| 6 | **FAQ** | Answers to common questions about design, comparisons, adoption, the AI angle, and project maturity. [Read the FAQ](https://www.kiit.dev/docs/kiit-result#faq). |
+| 7 | **Design** | Read more about the reasoning behind a status on both branches, a flexible error type, and where kiit-result fits relative to Arrow/kotlin-result. [Read the design docs](https://www.kiit.dev/docs/kiit-result#design). |
 
 ## Requirements
 
@@ -313,7 +284,7 @@ Contributions and design feedback are welcome. See [BUILD.md](./BUILD.md) for bu
 
 <div align="center">
 
-**kiit-result** is one module of [Kiit](https://www.kiit.dev) — a lightweight, modular Kotlin framework for building server applications, APIs, CLIs, and jobs.
+**kiit-result** is one module of [Kiit](https://www.kiit.dev) — a lightweight, modular Kotlin toolkit for building server applications, APIs, CLIs, and jobs.
 
 **Adopt one module at a time.**
 
