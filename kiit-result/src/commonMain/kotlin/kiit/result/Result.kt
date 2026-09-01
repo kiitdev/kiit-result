@@ -338,18 +338,16 @@ sealed class Result<out T, out E> {
         when (this) {
             is Success -> this
             is Failure -> {
+                val status = if (retainStatus) this.status else Unserved.UNEXPECTED
                 val err =
                     when (this.error) {
-                        null -> Err.of(Unserved.UNEXPECTED)
+                        null -> Err.of(status)
                         is Err -> error
                         is String -> Err.of(error)
                         is Exception -> Err.ex(error)
                         else -> Err.obj(error)
                     }
-                when (retainStatus) {
-                    false -> Failure(err, Unserved.UNEXPECTED, this.action)
-                    true -> Failure(err, this.status, this.action)
-                }
+                Failure(err, status, this.action)
             }
         }
 
