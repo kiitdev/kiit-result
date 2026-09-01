@@ -18,6 +18,9 @@ All notable changes to kiit-result are documented here. Format follows
 - Bumped the `kiit-codes` dependency to 1.0.2.
 - README restructured to match `kiit-codes`: the FAQ moved to the docs site, the Learn More table now points at real anchors, and "framework" became "toolkit" throughout.
 
+### Removed
+- `operate` — redundant with `flatMap`/`then` (the only difference, access to the whole `Result` instead of just the value, is already achievable by reading `status`/`action` into a local variable before calling `flatMap`). Never had any call sites in this repo.
+
 ### Fixed
 - `toOutcome()` no longer discards the original status when a `Failure`'s error is `null`. It now derives the `Err`'s message from the actual status instead of a hardcoded generic one.
 - `FailedBuilder`'s `restricted`/`invalid`/`unserved` overloads now thread an explicit `status` argument through to `errorFromEx`/`errorFromErr` consistently, matching `rejected`'s existing behavior.

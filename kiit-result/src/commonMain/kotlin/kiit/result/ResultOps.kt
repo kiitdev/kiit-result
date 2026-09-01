@@ -16,8 +16,8 @@ import kotlin.jvm.JvmName
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
  * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
- * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse`, `recover` reuse `T`/`E` inside the
- *   return type of a parameter lambda.
+ * - `flatMap`/`then`, `flatMapError`, `getOrElse`, `recover` reuse `T`/`E` inside the return type
+ *   of a parameter lambda.
  * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
  * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare.
@@ -83,26 +83,6 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
         is Success -> other
         is Failure -> this
     }
-
-/**
- * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
- * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
- *
- * @param op: The function to apply to this [Result] if this is a [Success]
- *
- * # Example
- * ```
- * val r1 = Success("guest"  ).operate { it }  // Success("guest")
- * val r2 = Failure("Unknown").operate { it }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
-    return when (this) {
-        is Success -> op(this)
-        is Failure -> this
-    }
-}
 
 /**
  * Applies supplied function `f` if this is a [Failure] to transform the error type
