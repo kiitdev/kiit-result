@@ -18,10 +18,10 @@ import kotlin.jvm.JvmName
  * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
  * - `flatMap`/`then`, `flatMapError`, `getOrElse`, `recover` reuse `T`/`E` inside the return type
  *   of a parameter lambda.
- * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
+ * - `flatten` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
  * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare.
- *   Same reasoning as `inner`, just a type-parameter bound instead of a shape.
+ *   Same reasoning as `flatten`, just a type-parameter bound instead of a shape.
  */
 
 /**
@@ -181,16 +181,16 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
     }
 
 /**
- * Gets the inner value in a nested Result
+ * Flattens a nested [Result] into one, matching Rust's and kotlin-result's `flatten`.
  *
  * # Example
  * ```
- * val r1 = Success(Success("guest")).inner() // Success("guest")
+ * val r1 = Success(Success("guest")).flatten() // Success("guest")
  * ```
  */
 @JsExport
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
+inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })
 
 /**
  * Returns true if this is a [Success] with the value supplied, or false otherwise

@@ -14,6 +14,7 @@ All notable changes to kiit-result are documented here. Format follows
 
 ### Changed
 - `getOrElse` now passes the failure's `error` to its fallback function, matching Kotlin's own `kotlin.Result.getOrElse`, kotlin-result, and Rust.
+- `inner` renamed to `flatten`, matching the name both Rust (stable since 1.89.0) and kotlin-result already use for the same operation.
 - Extension operators moved out of `Result.kt` into their own files (`ResultOps.kt`, `ResultListOps.kt`), since Kotlin's declaration-site variance rules require some of them to be top-level functions rather than members.
 - Bumped the `kiit-codes` dependency to 1.0.2.
 - README restructured to match `kiit-codes`: the FAQ moved to the docs site, the Learn More table now points at real anchors, and "framework" became "toolkit" throughout.
