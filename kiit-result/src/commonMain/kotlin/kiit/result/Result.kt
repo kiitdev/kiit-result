@@ -128,6 +128,23 @@ sealed class Result<out T, out E> {
         }
 
     /**
+     * Returns the result of supplied function `f` if this is a [Failure], or false otherwise
+     *
+     * @param f: the function to apply
+     *
+     * # Example
+     * ```
+     * Failure(42).existsError { it >= 42 } // true
+     * Failure(40).existsError { it >= 42 } // false
+     * ```
+     */
+    inline fun existsError(f: (E) -> Boolean): Boolean =
+        when (this) {
+            is Success -> false
+            is Failure -> f(this.error)
+        }
+
+    /**
      * Returns the value from this [Success] or null if this is a [Failure]
      *
      * # Example
@@ -141,6 +158,22 @@ sealed class Result<out T, out E> {
         when (this) {
             is Success -> this.value
             is Failure -> null
+        }
+
+    /**
+     * Returns the error from this [Failure] or null if this is a [Success]
+     *
+     * # Example
+     * ```
+     * Success(42).getErrorOrNull()  // null
+     * Failure(40).getErrorOrNull()  // 40
+     * ```
+     */
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun getErrorOrNull(): E? =
+        when (this) {
+            is Success -> null
+            is Failure -> this.error
         }
 
     /**

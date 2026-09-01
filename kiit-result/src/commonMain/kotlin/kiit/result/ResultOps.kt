@@ -14,7 +14,7 @@ import kotlin.jvm.JvmName
  * variance rules forbid a covariant class type parameter from appearing as a bare value-parameter
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
- * - `or`/`and`/`contains` take `T`/`E` directly as a value parameter.
+ * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
  * - `flatMap`/`then`, `flatMapError`, `operate`, `getOrElse` reuse `T`/`E` inside the return type
  *   of a parameter lambda.
  * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
@@ -133,6 +133,24 @@ inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
     when (this) {
         is Success -> this.value
         is Failure -> f(this.error)
+    }
+
+/**
+ * Returns the value from this [Success] or the [default] value supplied if [Failure]. Eager
+ * counterpart of [getOrElse] for when the fallback doesn't need to be computed lazily.
+ *
+ * # Example
+ * ```
+ * Success("Superman").getOr("???")  // "Superman"
+ * Failure("Unknown" ).getOr("???")  // "???"
+ * ```
+ */
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E> Result<T, E>.getOr(default: T): T =
+    when (this) {
+        is Success -> this.value
+        is Failure -> default
     }
 
 /**

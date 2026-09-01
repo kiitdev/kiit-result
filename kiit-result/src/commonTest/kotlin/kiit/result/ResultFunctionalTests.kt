@@ -11,8 +11,9 @@ import kotlin.test.assertTrue
 
 /**
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
- * `onFailure`, `mapError`/`flatMapError`, `transform`, `getOrElse`/`getOrNull`, `exists`,
- * `contains`, and `inner`, on both the `Success` and `Failure` branch of each.
+ * `onFailure`, `mapError`/`flatMapError`, `transform`, `getOrElse`/`getOr`/`getOrNull`/
+ * `getErrorOrNull`, `exists`/`existsError`, `contains`, and `inner`, on both the `Success` and
+ * `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test
@@ -28,6 +29,33 @@ class ResultFunctionalTests {
     fun can_get_or_null() {
         val result1 = unserved<String>("name unknown")
         assertEquals(null, result1.getOrNull())
+    }
+
+    @Test
+    fun can_get_or() {
+        val result1 = success("peter parker")
+        assertEquals("peter parker", result1.getOr("??"))
+
+        val result2 = unserved<String>("name unknown")
+        assertEquals("??", result2.getOr("??"))
+    }
+
+    @Test
+    fun can_get_error_or_null() {
+        val result1 = success("peter parker")
+        assertEquals(null, result1.getErrorOrNull())
+
+        val result2 = unserved<String>("name unknown")
+        assertEquals("name unknown", result2.getErrorOrNull()?.message)
+    }
+
+    @Test
+    fun can_check_exists_error() {
+        val result1 = unserved<String>("name unknown")
+        assertTrue(result1.existsError { it.message == "name unknown" })
+
+        val result2 = success("peter parker")
+        assertEquals(false, result2.existsError { true })
     }
 
     @Test
