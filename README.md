@@ -18,7 +18,7 @@ Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/docs/kiit-re
 
 </div>
 
-![Kiit Result overview](./assets/kiit-result-overview.png)
+![Kiit Result overview](./assets/kiit-result-overview-pub.png)
 
 ## 📚 Table of Contents
 
@@ -81,17 +81,17 @@ dependencies {
 import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.result.Outcome
-import kiit.result.OutcomeBuilder
+import kiit.result.Outcomes
 
-class UserService : OutcomeBuilder {
+class UserService {
     private val users = mutableMapOf<String, User>()
 
     fun create(id: String, email: String): Outcome<User> {
-        if (email.isBlank()) return invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return rejected(Rejected.CONFLICT)
+        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
+        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
         val user = User(id, email)
         users[id] = user
-        return success(user)
+        return Outcomes.success(user)
     }
 }
 ```
@@ -99,8 +99,6 @@ class UserService : OutcomeBuilder {
 **Compose with `map`/`flatMap`/`fold`:**
 
 ```kotlin
-import kiit.result.flatMap
-
 userService.create("alice", "alice@example.com")
     .map { it.email }
     .onSuccess { println("registered: $it") }
@@ -139,12 +137,23 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`Result<T, E>`** | Sealed type, either `Success<T>` or `Failure<E>`. |
 | **`Success<T>`** | Holds a `value: T` and a `status: Passed`. Defaults to `Succeeded.SUCCESS`. |
 | **`Failure<E>`** | Holds an `error: E` and a `status: Failed`. Defaults to `Unserved.UNEXPECTED`. |
-| **`Action`** | Optional context for the operation that produced/wrapped a `Result` — `action: String`, `xid: String? = null`, `data: Map<String, String> = mapOf()`, `previous: Action? = null`. Attach via `withAction(action, chain = true)`; chains to any existing `Action` by default, useful for pinpointing which layer failed in nested operations. |
+| **`Action`** | Optional context for the operation that produced/wrapped a `Result`. Attach via `withAction(action, chain = true)`. |
 | **`message`** | `result.status.message` — a convenience accessor on every `Result`. |
-| **`Option<T>`** | `Result<T, Unit>` — the historical role of `Option`/`Maybe` (Rust/Scala/Arrow), reimagined on `Result` so absence carries a `status` explaining why, not just a bare `None`. `Options.some(value)`/`Options.none()` are the discoverable entry points. |
-| **`Try<T>`** | `Result<T, Throwable>` — exception as the error type. |
-| **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type; the most commonly used alias. |
-| **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
+
+Every `Result` carries a `status` from kiit-codes' own taxonomy, not just `Failure`: `Passed` (`Succeeded`, `Pending`, `Excluded`, `Information`) or `Failed` (`Restricted`, `Invalid`, `Rejected`, `Unserved`). See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes.
+
+![Kiit Result status taxonomy](./assets/kiit-result-status.png)
+
+`Option<T>`, `Try<T>`, `Outcome<T>`, and `Validated<T>` are type aliases fixing `E` for common cases, each with a matching builder already wired up:
+
+| Alias | Definition | Role |
+|---|---|---|
+| **`Outcome<T>`** | `Result<T, Err>` | [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type, the most commonly used alias. |
+| **`Validated<T>`** | `Result<T, Err.ErrorList>` | For validation, collecting multiple errors instead of stopping at the first. |
+| **`Try<T>`** | `Result<T, Throwable>` | Exception as the error type. |
+| **`Option<T>`** | `Result<T, Unit>` | The historical `Option`/`Maybe` role, reimagined so absence carries a `status`. `Options.some(value)`/`Options.none()` are the entry points. |
+
+![Kiit Result aliases](./assets/kiit-result-aliases.png)
 
 Composition operators mirror what you'd expect from `Result`/`Either` in other languages — `map`, `flatMap`/`then`, `fold`, `getOrElse`, `recover`, and friends, plus `withStatus`/`withAction` for attaching a status/operation context after construction. See the [full operator reference](https://www.kiit.dev/docs/kiit-result#operators) for the complete list.
 
@@ -152,12 +161,7 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 
 ## Builders
 
-`Builder<E>` provides status-aware factory methods so you rarely build `Success`/`Failure` directly. It's composed from two smaller interfaces, one per branch, so each stays scoped to its own category constants (the same reason kiit-codes keeps `Succeeded`/`Restricted`/etc. constants on their own companions rather than one shared object):
-
-- **`PassedBuilder<E>`** — `success`/`pending`/`excluded`/`information`, each with 3 overloads: no-arg, `(value, message: String? = null)`, and `(value, status)`.
-- **`FailedBuilder<E>`** — `restricted`/`invalid`/`rejected`/`unserved`, each with 5 overloads: no-arg, `(message)`, `(ex, status?)`, `(err, status?)`, `(status)`.
-
-`Builder`/`PassedBuilder`/`FailedBuilder` live in `kiit.result.builders` — they're the extensible machinery you implement (directly, or via `Outcomes`/`Options`/`Tries`), not something most callers import directly. `Outcomes`/`Options`/`Tries`/`Validations` themselves stay in `kiit.result`, alongside `Result`/`Success`/`Failure`, since those are the ready-made, everyday API.
+`Builder<E>` provides status-aware factory methods so you rarely build `Success`/`Failure` directly. `Outcomes`/`Options`/`Tries`/`Validations` are the ready-made implementations, one per alias.
 
 | Builder | Status group | Default |
 |---|---|---|
@@ -172,31 +176,7 @@ A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list in
 
 Note that `excluded()` builds a **`Success`**, not a `Failure` — an intentionally excluded item (deduplicated, disqualified, filtered out) is a [kiit-codes](https://github.com/kiitdev/kiit-codes) `Passed.Excluded` status, not a failure. There's no separate `conflict()` — it's `rejected(status = Rejected.CONFLICT)`, since a conflict is just a specific `Rejected` outcome, not its own category.
 
-`Options` also adds `some(value)`/`none(...)` on top of the generic builders above — a discoverable `Some`/`None`-style pair for `Option<T>` specifically (see [Concepts](#concepts)). `none()` defaults to `Rejected.NOT_EXISTS`, distinct from the generic `Unserved.UNEXPECTED` fallback:
-
-```kotlin
-import kiit.result.Options
-
-val a = Options.some(42)                    // Option<Int> — present
-val b = Options.none<Int>()                 // Option<Int> — absent, Rejected.NOT_EXISTS
-val c = Options.none<Int>(Rejected.CONFLICT) // Option<Int> — absent, custom status
-```
-
-`Outcomes`/`Options`/`Tries` are the three ready-made `Builder` implementations, one per common error type. `Validations` is a fourth, purpose-built for collecting multiple errors at once instead of catching an exception:
-
-```kotlin
-import kiit.result.Outcomes
-import kiit.result.Options
-import kiit.result.Tries
-import kiit.result.Validations
-
-val a = Outcomes.attempt { riskyCall() }        // Outcome<T>    — catches Throwable, wraps as Err
-val b = Options.of { riskyCall() }              // Option<T>     — catches Throwable, discards detail
-val c = Tries.attempt { riskyCall() }           // Try<T>        — catches Throwable, re-derives status
-                                                  //                 from a thrown kiit-codes StatusException
-val d = Validations.of(form, errorsFound)       // Validated<T>  — Success if errorsFound is empty,
-                                                  //                 otherwise a single Failure carrying all of them
-```
+See the [Builders docs](https://www.kiit.dev/docs/kiit-result#builders) for the full `Builder<E>` architecture, `Options.some`/`none`, and worked examples for `Outcomes`/`Options`/`Tries`/`Validations`.
 
 ## Conversions
 
