@@ -22,7 +22,7 @@ import kotlin.jvm.JvmName
  *
  * When every item succeeds, the combined [Success] can't losslessly represent N individual
  * statuses, so it defaults to [Succeeded.SUCCESS], carrying the first item's [Action] (override
- * with [withAction] if a different one is needed).
+ * with [Result.withAction] if a different one is needed).
  *
  * # Example
  * ```

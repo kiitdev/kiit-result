@@ -324,6 +324,30 @@ sealed class Result<out T, out E> {
         }
 
     /**
+     * Applies the supplied [Action] to this result.
+     *
+     * @param action : The [Action] describing the operation that produced/wrapped this result. If
+     *                 it already has an explicit [Action.previous] set, that's always respected.
+     * @param chain : When true (default) and [action] has no explicit [Action.previous], links it
+     *                to whatever action is already on this result, preserving history across
+     *                nested operations. When false, [action] is applied as-is.
+     *
+     * # Example
+     * ```
+     * Success(42).withAction(Action("chargeCard", xid = "req-123"))
+     * ```
+     */
+    @Suppress("NOTHING_TO_INLINE")
+    @JvmOverloads
+    inline fun withAction(action: Action, chain: Boolean = true): Result<T, E> {
+        val next = if (chain) action.copy(previous = action.previous ?: this.action) else action
+        return when (this) {
+            is Success -> this.copy(action = next)
+            is Failure -> this.copy(action = next)
+        }
+    }
+
+    /**
      * Transform this to an Outcome (type alias ) with error type of [Err]
      *
      * # Example

@@ -5,7 +5,6 @@ import kiit.codes.Failed;
 import kiit.codes.Passed;
 import kiit.codes.Status;
 import kiit.result.Action;
-import kiit.result.Actions;
 import kiit.result.Failure;
 import kiit.result.Options;
 import kiit.result.Outcomes;
@@ -80,8 +79,9 @@ public class SampleApp {
         Result<Integer, Unit> none = Options.none();
         System.out.println("some: " + some.getOrNull() + ", none status: " + none.getStatus().getName());
 
-        // Action / withAction: @JvmOverloads gives Java the no-`chain`-arg form.
-        Result<Integer, String> chained = Actions.withAction(bare, new Action("step2"));
+        // withAction is a member, so it's a real instance method here, not a facade class call.
+        // @JvmOverloads still gives Java the no-`chain`-arg form.
+        Result<Integer, String> chained = bare.withAction(new Action("step2"));
         System.out.println("chained action: " + chained.getAction().getAction());
 
         // Results: the @file:JvmName("Results") facade for Result.kt's top-level extension

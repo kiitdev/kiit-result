@@ -83,11 +83,11 @@ public class JavaInteropTest {
     }
 
     @Test
-    public void actionsFacadeAndWithActionHaveNoChainArgOverload() {
-        // @file:JvmName("Actions") on Action.kt: Java sees kiit.result.Actions, not ActionKt.
-        // @JvmOverloads on withAction: Java gets a no-`chain`-arg overload defaulting to true.
+    public void withActionHasNoChainArgOverload() {
+        // withAction is a member (not a top-level extension), so it's a real instance method in
+        // Java, no facade class needed. @JvmOverloads gives Java a no-`chain`-arg overload too.
         Result<Integer, String> bare = new Success<>(42);
-        Result<Integer, String> chained = Actions.withAction(bare, new Action("step2"));
+        Result<Integer, String> chained = bare.withAction(new Action("step2"));
         assertEquals("step2", chained.getAction().getAction());
     }
 
