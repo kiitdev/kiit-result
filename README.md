@@ -1,9 +1,7 @@
 <div align="center">
 <h1>
-  <img src="./assets/kiit-result-logo.png" width="42" align="absmiddle" />
+  <img src="./assets/kiit-result-header.png" align="center" />
 </h1>
-
-# kiit-result
 
 **A Kotlin `Result<T, E>` type with a kiit-codes status on every branch, not just failure.**
 
@@ -222,7 +220,7 @@ See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current w
 | 1 | **Concepts** | Explore `Result`/`Success`/`Failure`, `Action`, and every type alias in depth. [Read the concepts docs](https://www.kiit.dev/docs/kiit-result#concepts). |
 | 2 | **Builders** | Learn how the status-aware builders work and how to implement your own `Builder<E>`. [Read the builders docs](https://www.kiit.dev/docs/kiit-result#builders). |
 | 3 | **Conversions** | See every conversion between `Result`, `Outcome`, `Try`, and kiit-codes' `StatusException`. [Read the conversions docs](https://www.kiit.dev/docs/kiit-result#conversions). |
-| 4 | **Validation** | Learn how `Validated<T>` and `Validations` accumulate multiple errors instead of stopping at the first. [Read the validation docs](https://www.kiit.dev/docs/kiit-result#validation). |
+| 4 | **Validation** | Learn how `Validated<T>` and `Validations` accumulate multiple errors instead of stopping at the first. [Read the validation docs](https://www.kiit.dev/docs/kiit-result#alias-validatedt). |
 | 5 | **Codes** | See the separate `kiit-codes` module this library builds its status taxonomy on top of. [Read the kiit-codes README](https://github.com/kiitdev/kiit-codes#readme). |
 | 6 | **FAQ** | Answers to common questions about design, comparisons, adoption, the AI angle, and project maturity. [Read the FAQ](https://www.kiit.dev/docs/kiit-result#faq). |
 | 7 | **Design** | Read more about the reasoning behind a status on both branches, a flexible error type, and where kiit-result fits relative to Arrow/kotlin-result. [Read the design docs](https://www.kiit.dev/docs/kiit-result#design). |
