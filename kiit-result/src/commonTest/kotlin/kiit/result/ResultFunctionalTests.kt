@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 /**
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
- * `onFailure`, `mapError`/`flatMapError`, `recover`, `transform`, `getOrElse`/`getOr`/
+ * `onFailure`, `mapError`/`orElse`, `recover`, `transform`, `getOrElse`/`getOr`/
  * `getOrNull`/`getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/
  * `existsError`, `contains`, and `flatten`, on both the `Success` and `Failure` branch of each.
  */
@@ -214,9 +214,9 @@ class ResultFunctionalTests {
     }
 
     @Test
-    fun can_convert_error_via_flatMap() {
+    fun can_convert_error_via_orElse() {
         val result1 = unserved<String>("name unknown")
-        val result2 = result1.flatMapError { Failure(0) }
+        val result2 = result1.orElse { Failure(0) }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
         assertEquals(Unserved.UNEXPECTED.message, result2.message)

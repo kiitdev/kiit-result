@@ -15,6 +15,8 @@ All notable changes to kiit-result are documented here. Format follows
 ### Changed
 - `getOrElse` now passes the failure's `error` to its fallback function, matching Kotlin's own `kotlin.Result.getOrElse`, kotlin-result, and Rust.
 - `inner` renamed to `flatten`, matching the name both Rust (stable since 1.89.0) and kotlin-result already use for the same operation.
+- `flatMapError` renamed to `orElse`, matching Rust's `or_else` and kotlin-result's `orElse`, and pairing with `or` the same way `getOrElse` already pairs with `getOr`.
+- `withAction` moved from a top-level extension function (in `Action.kt`) to a member of `Result`, alongside `withStatus` — it has no variance constraint forcing it to be an extension, unlike the operators in `ResultOps.kt`. Kotlin call sites are unaffected; Java call sites change from `Actions.withAction(result, action)` to `result.withAction(action)`. Dropped `inline` from it in the process (it had no lambda parameter to inline anyway) after finding that `inline` on a member function with a default parameter value suppresses the optional marker in the generated JS/TS declarations (`chain: boolean` instead of `chain?: boolean`) — a real Kotlin/JS export quirk, not a stale-cache issue.
 - Extension operators moved out of `Result.kt` into their own files (`ResultOps.kt`, `ResultListOps.kt`), since Kotlin's declaration-site variance rules require some of them to be top-level functions rather than members.
 - Bumped the `kiit-codes` dependency to 1.0.2.
 - README restructured to match `kiit-codes`: the FAQ moved to the docs site, the Learn More table now points at real anchors, and "framework" became "toolkit" throughout.

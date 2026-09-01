@@ -337,9 +337,8 @@ sealed class Result<out T, out E> {
      * Success(42).withAction(Action("chargeCard", xid = "req-123"))
      * ```
      */
-    @Suppress("NOTHING_TO_INLINE")
     @JvmOverloads
-    inline fun withAction(action: Action, chain: Boolean = true): Result<T, E> {
+    fun withAction(action: Action, chain: Boolean = true): Result<T, E> {
         val next = if (chain) action.copy(previous = action.previous ?: this.action) else action
         return when (this) {
             is Success -> this.copy(action = next)

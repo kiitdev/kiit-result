@@ -16,8 +16,8 @@ import kotlin.jvm.JvmName
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
  * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
- * - `flatMap`/`then`, `flatMapError`, `getOrElse`, `recover` reuse `T`/`E` inside the return type
- *   of a parameter lambda.
+ * - `flatMap`/`then`, `orElse`, `getOrElse`, `recover` reuse `T`/`E` inside the return type of a
+ *   parameter lambda.
  * - `flatten` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
  * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare.
@@ -85,18 +85,20 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
     }
 
 /**
- * Applies supplied function `f` if this is a [Failure] to transform the error type
+ * Applies supplied function `f` if this is a [Failure] to transform the error type. Named to
+ * match Rust's `or_else` and kotlin-result's `orElse`, and to pair with [or] the same way
+ * [getOrElse] pairs with [getOr].
  *
  * @param f: the function to apply
  *
  * # Example
  * ```
- * val r1 = Success("guest"  ).flatMapError { Success("recovered") }  // Success("guest")
- * val r2 = Failure("timeout").flatMapError { Success("recovered") }  // Success("recovered")
+ * val r1 = Success("guest"  ).orElse { Success("recovered") }  // Success("guest")
+ * val r2 = Failure("timeout").orElse { Success("recovered") }  // Success("recovered")
  * ```
  */
 @JsExport
-inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
+inline fun <T, E, E2> Result<T, E>.orElse(f: (E) -> Result<T, E2>): Result<T, E2> =
     when (this) {
         is Success -> this
         is Failure -> f(this.error)
@@ -104,7 +106,7 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
 
 /**
  * Returns this unchanged if it's a [Success], or a new [Success] wrapping the result of applying
- * [transform] to the error if this is a [Failure]. Unlike [flatMapError], which can still produce
+ * [transform] to the error if this is a [Failure]. Unlike [orElse], which can still produce
  * a [Failure], this unconditionally recovers. There's no lossless Failed→Passed status mapping,
  * so the recovered branch defaults to [Succeeded.SUCCESS], matching [Success]'s own single-value
  * constructor default. [Action] is preserved, since the operation identity continues across the
