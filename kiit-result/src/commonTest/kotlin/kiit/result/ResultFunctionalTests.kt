@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
  * `onFailure`, `mapError`/`orElse`, `recover`, `transform`, `getOrElse`/`getOr`/
  * `getOrNull`/`getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/
- * `existsError`, `contains`, and `flatten`, on both the `Success` and `Failure` branch of each.
+ * `existsError`, and `flatten`, on both the `Success` and `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test
@@ -133,12 +133,6 @@ class ResultFunctionalTests {
     fun can_check_exists() {
         val result1 = success("peter parker")
         assertTrue(result1.exists { it == "peter parker" })
-    }
-
-    @Test
-    fun can_check_contains() {
-        val result1 = success("peter parker")
-        assertEquals(true, result1.contains("peter parker"))
     }
 
     @Test
@@ -268,7 +262,7 @@ class ResultFunctionalTests {
                 .flatMap { Success(it + 1) }
 
         assertEquals("converted to int: 1", successValue)
-        assertTrue(result2.contains(2))
+        assertTrue(result2.exists { it == 2 })
 
         val finalValue = result2.fold({ "final value: $it" }, { "error : $it" })
         assertEquals("final value: 2", finalValue)

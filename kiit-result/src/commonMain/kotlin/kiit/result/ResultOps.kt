@@ -15,7 +15,7 @@ import kotlin.jvm.JvmName
  * variance rules forbid a covariant class type parameter from appearing as a bare value-parameter
  * type, or being reused inside the return type of a parameter lambda, in a *member* function.
  * Every function below hits one of those two shapes:
- * - `or`/`and`/`contains`/`getOr` take `T`/`E` directly as a value parameter.
+ * - `or`/`and`/`getOr` take `T`/`E` directly as a value parameter.
  * - `flatMap`/`then`, `orElse`, `getOrElse`, `recover` reuse `T`/`E` inside the return type of a
  *   parameter lambda.
  * - `flatten` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
@@ -193,24 +193,6 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
 @JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })
-
-/**
- * Returns true if this is a [Success] with the value supplied, or false otherwise
- *
- * # Example
- * ```
- * Success(42).contains(42) // true
- * Success(40).contains(42) // false
- * Failure(39).contains(42) // false
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
-    when (this) {
-        is Success -> i == this.value
-        is Failure -> false
-    }
 
 /**
  * Builds a Result as a [Success] with the value supplied
