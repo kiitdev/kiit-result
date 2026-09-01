@@ -83,7 +83,7 @@ check(chained.action?.action == "chargeCard", "bare.withAction(action:chain:).ac
 // requires returning Result<AnyObject, AnyObject>, but a real Success/Failure never satisfies
 // that, Kotlin's Nothing doesn't widen, even via a forced cast. Not demonstrated here.
 
-let orElse = failBare.getOrElse { KotlinInt(value: -1) }
+let orElse = failBare.getOrElse { _ in KotlinInt(value: -1) }
 check((orElse as! KotlinInt).intValue == -1, "failBare.getOrElse { }")
 
 print("All sample-swift checks passed.")

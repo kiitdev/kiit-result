@@ -46,11 +46,11 @@ interface FailedBuilder<out E> {
 
     @JsName("restrictedFromException")
     fun <T> restricted(ex: Throwable, status: Failed.Restricted? = null): Result<T, E> =
-        Failure(errorFromEx(ex, Restricted.DENIED), status ?: Restricted.DENIED)
+        Failure(errorFromEx(ex, get(status, Restricted.DENIED)), status ?: Restricted.DENIED)
 
     @JsName("restrictedFromErr")
     fun <T> restricted(err: Err, status: Failed.Restricted? = null): Result<T, E> =
-        Failure(errorFromErr(err, Restricted.DENIED), status ?: Restricted.DENIED)
+        Failure(errorFromErr(err, get(status, Restricted.DENIED)), status ?: Restricted.DENIED)
 
     @JsName("restrictedStatus")
     fun <T> restricted(status: Failed.Restricted): Result<T, E> =
@@ -64,11 +64,11 @@ interface FailedBuilder<out E> {
 
     @JsName("invalidFromException")
     fun <T> invalid(ex: Throwable, status: Failed.Invalid? = null): Result<T, E> =
-        Failure(errorFromEx(ex, Invalid.INVALID_VALUE), status ?: Invalid.INVALID_VALUE)
+        Failure(errorFromEx(ex, get(status, Invalid.INVALID_VALUE)), status ?: Invalid.INVALID_VALUE)
 
     @JsName("invalidFromErr")
     fun <T> invalid(err: Err, status: Failed.Invalid? = null): Result<T, E> =
-        Failure(errorFromErr(err, Invalid.INVALID_VALUE), status ?: Invalid.INVALID_VALUE)
+        Failure(errorFromErr(err, get(status, Invalid.INVALID_VALUE)), status ?: Invalid.INVALID_VALUE)
 
     @JsName("invalidStatus")
     fun <T> invalid(status: Failed.Invalid): Result<T, E> =
@@ -107,11 +107,11 @@ interface FailedBuilder<out E> {
 
     @JsName("unservedFromException")
     fun <T> unserved(ex: Throwable, status: Failed.Unserved? = null): Result<T, E> =
-        Failure(errorFromEx(ex, Unserved.UNEXPECTED), status ?: Unserved.UNEXPECTED)
+        Failure(errorFromEx(ex, get(status, Unserved.UNEXPECTED)), status ?: Unserved.UNEXPECTED)
 
     @JsName("unservedFromErr")
     fun <T> unserved(err: Err, status: Failed.Unserved? = null): Result<T, E> =
-        Failure(errorFromErr(err, Unserved.UNEXPECTED), status ?: Unserved.UNEXPECTED)
+        Failure(errorFromErr(err, get(status, Unserved.UNEXPECTED)), status ?: Unserved.UNEXPECTED)
 
     @JsName("unservedStatus")
     fun <T> unserved(status: Failed.Unserved): Result<T, E> =

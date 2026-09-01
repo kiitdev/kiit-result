@@ -22,13 +22,6 @@ import kotlin.Unit;
  * (jvmTarget = JVM_21). See kiit-result/src/jvmTest/java/kiit/result/JavaInteropTest.java for the
  * same surface exercised as assertions.
  *
- * Note: kiit-result depends on the *published* kiit-codes:0.2.1 artifact (a Maven coordinate),
- * which predates kiit-codes' own Java-interop pass (@JvmField on its status constants, etc.,
- * still only in unpublished PRs). So this sample builds kiit-codes Status values via their public
- * constructors directly, rather than referencing constants like `Succeeded.CREATED` the way
- * kiit-codes' own Java sample can. Those constants aren't public fields yet in the version this
- * depends on. Revisit once kiit-codes republishes with its own interop fixes.
- *
  * Also: `Option<T>`/`Outcome<T>`/`Try<T>` (kiit-result's typealiases for `Result<T, Unit>`/
  * `Result<T, Err>`/`Result<T, Throwable>`) are fully erased for Java. There's no `Option`/
  * `Outcome`/`Try` class to import; Java always sees the expanded `Result<T, E>` form.
@@ -40,7 +33,9 @@ public class SampleApp {
         // pre-existing hand-rolled convenience constructors, four ways to build a Success now.
         Success<Integer> bare = new Success<>(42);
         Success<Integer> withMessage = new Success<>(42, "created via convenience overload");
-        Passed created = new Passed.Succeeded("CREATED", "A new resource was created.", "kiit");
+        // Fully-qualified: kiit-codes' `Succeeded` is a Kotlin typealias for `Passed.Succeeded`,
+        // and typealiases are erased at the bytecode level, so Java can't import or see them.
+        Passed created = Passed.Succeeded.CREATED;
         Success<Integer> withStatus = new Success<>(42, created);
         Success<Integer> full = new Success<>(42, created, new Action("createUser"));
         System.out.println("bare: " + bare.getValue() + " status=" + bare.getStatus().getName());
@@ -48,7 +43,7 @@ public class SampleApp {
         System.out.println("full: " + full.getAction().getAction());
 
         Failure<String> failBare = new Failure<>("boom");
-        Failed denied = new Failed.Restricted("DENIED", "The request was denied.", "kiit");
+        Failed denied = Failed.Restricted.DENIED;
         Failure<String> failWithStatus = new Failure<>("boom", denied);
         System.out.println("failBare status: " + failBare.getStatus().getName());
         System.out.println("failWithStatus status: " + failWithStatus.getStatus().getName());
@@ -94,7 +89,7 @@ public class SampleApp {
         // wildcard-bounded generics from Result<out T, out E>'s covariance (a real, documented,
         // unfixable Java friction) confuse Java's inference of the lambda parameter's type.
         Result<Integer, String> mapped = Results.<Integer, Integer, String>flatMap(bare, v -> new Success<>(v + 1));
-        Integer orElse = Results.getOrElse(failBare, () -> -1);
+        Integer orElse = Results.getOrElse(failBare, (err) -> -1);
         System.out.println("mapped: " + ((Success<Integer>) mapped).getValue() + ", orElse: " + orElse);
     }
 

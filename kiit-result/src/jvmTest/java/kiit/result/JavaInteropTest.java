@@ -15,11 +15,6 @@ import static org.junit.Assert.assertNull;
  * @file:JvmName annotations and the sealed-hierarchy `permits` metadata that make the library
  * usable idiomatically from Java, mirroring kiit-codes' own JavaInteropTest.java. See
  * samples/sample-java/src/main/java/sample/SampleApp.java for the same surface as a runnable demo.
- *
- * Note: kiit-result depends on the *published* kiit-codes:0.2.1 artifact, which predates
- * kiit-codes' own Java-interop pass, so kiit-codes Status values are built via their public
- * constructors below rather than via companion constants like `Succeeded.CREATED`. See
- * SampleApp.java's class-level comment for the full explanation.
  */
 public class JavaInteropTest {
 
@@ -34,7 +29,9 @@ public class JavaInteropTest {
         Success<Integer> withMsg = new Success<>(42, "created via convenience overload");
         assertEquals("created via convenience overload", withMsg.getStatus().getMessage());
 
-        Passed created = new Passed.Succeeded("CREATED", "A new resource was created.", "kiit");
+        // Fully-qualified: kiit-codes' `Succeeded` is a Kotlin typealias for `Passed.Succeeded`,
+        // and typealiases are erased at the bytecode level, so Java can't import or see them.
+        Passed created = Passed.Succeeded.CREATED;
         Success<Integer> withStatus = new Success<>(42, created);
         assertEquals("CREATED", withStatus.getStatus().getName());
         assertNull(withStatus.getAction());
@@ -50,7 +47,7 @@ public class JavaInteropTest {
         assertEquals("boom", bare.getError());
         assertEquals("UNEXPECTED", bare.getStatus().getName());
 
-        Failed denied = new Failed.Restricted("DENIED", "The request was denied.", "kiit");
+        Failed denied = Failed.Restricted.DENIED;
         Failure<String> withStatus = new Failure<>("boom", denied);
         assertEquals("DENIED", withStatus.getStatus().getName());
     }
@@ -69,8 +66,8 @@ public class JavaInteropTest {
     public void passedAndFailedGroupsSupportExhaustiveSwitchPatternMatching() {
         // Overload resolution picks the right 4-leaf switch based on the static type: Passed for
         // a Success's status, Failed for a Failure's.
-        Passed pending = new Passed.Pending("QUEUED", "The request is waiting to be processed.", "kiit");
-        Failed unserved = new Failed.Unserved("TIMEOUT", "The operation timed out.", "kiit");
+        Passed pending = Passed.Pending.QUEUED;
+        Failed unserved = Failed.Unserved.TIMEOUT;
         assertEquals("Pending: QUEUED", describeGroup(pending));
         assertEquals("Unserved: TIMEOUT", describeGroup(unserved));
     }
@@ -79,8 +76,8 @@ public class JavaInteropTest {
     public void statusSealedHierarchySupportsExhaustiveSwitchPatternMatching() {
         // Same 8-leaf switch as kiit-codes' own JavaInteropTest, exercised via a Status pulled off
         // a Success/Failure rather than off a Status value directly.
-        Status succeeded = new Success<>(1, new Passed.Succeeded("SUCCESS", "ok", "kiit")).getStatus();
-        Status restricted = new Failure<>("boom", new Failed.Restricted("DENIED", "denied", "kiit")).getStatus();
+        Status succeeded = new Success<>(1, Passed.Succeeded.SUCCESS).getStatus();
+        Status restricted = new Failure<>("boom", Failed.Restricted.DENIED).getStatus();
         assertEquals("Succeeded: SUCCESS", describeStatus(succeeded));
         assertEquals("Restricted: DENIED", describeStatus(restricted));
     }
@@ -105,7 +102,7 @@ public class JavaInteropTest {
         assertEquals(Integer.valueOf(43), ((Success<Integer>) mapped).getValue());
 
         Failure<String> failBare = new Failure<>("boom");
-        Integer orElse = Results.getOrElse(failBare, () -> -1);
+        Integer orElse = Results.getOrElse(failBare, (err) -> -1);
         assertEquals(Integer.valueOf(-1), orElse);
     }
 

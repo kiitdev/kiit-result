@@ -1,5 +1,4 @@
 /** url: www.kiit.dev */
-@file:JvmName("Results")
 @file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class)
 
 package kiit.result
@@ -16,7 +15,6 @@ import kotlin.js.ExperimentalJsStatic
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.JsStatic
-import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
@@ -63,8 +61,8 @@ sealed class Result<out T, out E> {
      *
      * # Example
      * ```
-     * val r1 = Success("Superman").map { "Clark Kent" }  // Success("Clark Kent")
-     * val r2 = Failure("Unknown" ).map { "???"        }  // Failure("Unknown")
+     * val r1 = Success("guest" ).map { "member" }  // Success("member")
+     * val r2 = Failure("Unknown").map { "???"   }  // Failure("Unknown")
      * ```
      */
     inline fun <T2> map(f: (T) -> T2): Result<T2, E> =
@@ -80,8 +78,8 @@ sealed class Result<out T, out E> {
      *
      * # Example
      * ```
-     * val r1 = Success("Superman").mapError { "unknown" }  // Success("Superman")
-     * val r2 = Failure("error"    ).mapError { "unknown" }  // Failure("unknown")
+     * val r1 = Success("guest").mapError { "unknown" }  // Success("guest")
+     * val r2 = Failure("error").mapError { "unknown" }  // Failure("unknown")
      * ```
      */
     inline fun <E2> mapError(f: (E) -> E2): Result<T, E2> =
@@ -130,6 +128,23 @@ sealed class Result<out T, out E> {
         }
 
     /**
+     * Returns the result of supplied function `f` if this is a [Failure], or false otherwise
+     *
+     * @param f: the function to apply
+     *
+     * # Example
+     * ```
+     * Failure(42).existsError { it >= 42 } // true
+     * Failure(40).existsError { it >= 42 } // false
+     * ```
+     */
+    inline fun existsError(f: (E) -> Boolean): Boolean =
+        when (this) {
+            is Success -> false
+            is Failure -> f(this.error)
+        }
+
+    /**
      * Returns the value from this [Success] or null if this is a [Failure]
      *
      * # Example
@@ -143,6 +158,93 @@ sealed class Result<out T, out E> {
         when (this) {
             is Success -> this.value
             is Failure -> null
+        }
+
+    /**
+     * Returns the error from this [Failure] or null if this is a [Success]
+     *
+     * # Example
+     * ```
+     * Success(42).getErrorOrNull()  // null
+     * Failure(40).getErrorOrNull()  // 40
+     * ```
+     */
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun getErrorOrNull(): E? =
+        when (this) {
+            is Success -> null
+            is Failure -> this.error
+        }
+
+    /**
+     * Returns the value from this [Success], or throws if this is a [Failure]. The error is never
+     * silently dropped. If it's already a [Throwable] it's rethrown as-is, otherwise a new one
+     * gets built from the status and error. No exception is constructed on the [Success] path.
+     *
+     * # Example
+     * ```
+     * Success(42).getOrThrow()      // 42
+     * Failure("boom").getOrThrow()  // throws Exception("boom")
+     * ```
+     */
+    fun getOrThrow(): T =
+        when (this) {
+            is Success -> this.value
+            is Failure -> throw this.toThrowable()
+        }
+
+    /**
+     * Returns the value from this [Success], or throws with [message] prefixed if this is a
+     * [Failure]. The underlying failure is preserved as the thrown exception's cause. No
+     * exception is constructed on the [Success] path.
+     *
+     * # Example
+     * ```
+     * Success(42).getOrThrow { "expected a value" }      // 42
+     * Failure("boom").getOrThrow { "expected a value" }  // throws "expected a value: boom"
+     * ```
+     */
+    @JsName("getOrThrowMessage")
+    inline fun getOrThrow(message: () -> Any): T =
+        when (this) {
+            is Success -> this.value
+            is Failure -> {
+                val cause = this.toThrowable()
+                throw IllegalStateException("${message()}: ${cause.message}", cause)
+            }
+        }
+
+    /**
+     * Returns the error from this [Failure], or throws if this is a [Success]
+     *
+     * # Example
+     * ```
+     * Failure("boom").getErrorOrThrow()  // "boom"
+     * Success(42).getErrorOrThrow()      // throws IllegalStateException
+     * ```
+     */
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun getErrorOrThrow(): E =
+        when (this) {
+            is Success -> error("getErrorOrThrow() called on a Success value: ${this.value}")
+            is Failure -> this.error
+        }
+
+    /**
+     * Returns the error from this [Failure], or throws with [message] prefixed if this is a
+     * [Success]
+     *
+     * # Example
+     * ```
+     * Failure("boom").getErrorOrThrow { "expected a failure" }  // "boom"
+     * Success(42).getErrorOrThrow { "expected a failure" }      // throws "expected a failure: 42"
+     * ```
+     */
+    @JsName("getErrorOrThrowMessage")
+    inline fun getErrorOrThrow(message: () -> Any): E =
+        when (this) {
+            is Success -> error("${message()}: ${this.value}")
+            is Failure -> this.error
         }
 
     /**
@@ -236,18 +338,16 @@ sealed class Result<out T, out E> {
         when (this) {
             is Success -> this
             is Failure -> {
+                val status = if (retainStatus) this.status else Unserved.UNEXPECTED
                 val err =
                     when (this.error) {
-                        null -> Err.of(Unserved.UNEXPECTED)
+                        null -> Err.of(status)
                         is Err -> error
                         is String -> Err.of(error)
                         is Exception -> Err.ex(error)
                         else -> Err.obj(error)
                     }
-                when (retainStatus) {
-                    false -> Failure(err, Unserved.UNEXPECTED, this.action)
-                    true -> Failure(err, this.status, this.action)
-                }
+                Failure(err, status, this.action)
             }
         }
 
@@ -298,9 +398,9 @@ sealed class Result<out T, out E> {
  * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
  *
  * JS/TS note: covariance erases cleanly to plain TS generics. Extension functions (`flatMap`,
- * `getOrElse`, etc.) export as flat top-level functions taking the receiver as an explicit first
- * parameter, and the `@JsName`d secondary constructors below become `static` factory methods
- * (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
+ * `getOrElse`, etc., in `ResultOps.kt`) export as flat top-level functions taking the receiver as
+ * an explicit first parameter, and the `@JsName`d secondary constructors below become `static`
+ * factory methods (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
  */
 @JsExport
 data class Success<out T>
@@ -358,170 +458,19 @@ data class Failure<out E>
          */
         @JsName("ofMessage")
         constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
+
+        /**
+         * Maps this [Failure]'s [error]/[status] to a [Throwable], for [getOrThrow]. Rethrows
+         * [error] as-is when it's already an exception, otherwise builds one from [status]/
+         * [error] so nothing is silently dropped. Not used by [toTry], which has its own,
+         * slightly different identity-preserving behavior for the already-[Exception] case.
+         */
+        @PublishedApi
+        internal fun toThrowable(): Throwable =
+            when (val err = this.error) {
+                is Exception -> err
+                is Err -> this.status.toException(listOf(err))
+                null -> Exception(this.status.message)
+                else -> Exception(err.toString())
+            }
     }
-
-/**
- * Applies supplied function `f` if this is a [Success]
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").flatMap { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMap { Success("???")        }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T2, E> = this.then(f)
-
-/**
- * Applies supplied function `f` if this is a [Success]
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").then { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).then { Success("???")        }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, E> =
-    when (this) {
-        is Success -> f(this.value)
-        is Failure -> this
-    }
-
-/**
- * Returns this if it's a [Success], or the supplied fallback [other] if this is a [Failure]
- *
- * @param other: The fallback [Result] to return if this is a [Failure]
- *
- * # Example
- * ```
- * val r1 = Success("Superman").or(Success("Clark Kent"))  // Success("Superman")
- * val r2 = Failure("Unknown" ).or(Success("Clark Kent"))  // Success("Clark Kent")
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
-    return when (this) {
-        is Success -> this
-        is Failure -> other
-    }
-}
-
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
-    when (this) {
-        is Success -> other
-        is Failure -> this
-    }
-
-/**
- * Applies supplied function `op` to this whole [Result] if this is a [Success]. Unlike
- * [flatMap]/[then], which apply to just the success value, `op` here receives the [Result] itself
- *
- * @param op: The function to apply to this [Result] if this is a [Success]
- *
- * # Example
- * ```
- * val r1 = Success("Superman").operate { it }  // Success("Superman")
- * val r2 = Failure("Unknown" ).operate { it }  // Failure("Unknown")
- * ```
- */
-@JsExport
-inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E>): Result<T2, E> {
-    return when (this) {
-        is Success -> op(this)
-        is Failure -> this
-    }
-}
-
-/**
- * Applies supplied function `f` if this is a [Failure] to transform the error type
- *
- * @param f: the function to apply
- *
- * # Example
- * ```
- * val r1 = Success("Superman").flatMapError { "Clark Kent" }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMapError { "???"        }  // Failure("???")
- * ```
- */
-@JsExport
-inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result<T, E2> =
-    when (this) {
-        is Success -> this
-        is Failure -> f(this.error)
-    }
-
-/**
- * Returns the value from this [Success] or the default value supplied if [Failure]
- *
- * # Example
- * ```
- * Success("Superman").getOrElse("???")  // "Superman"
- * Failure("Unknown" ).getOrElse("???")  // "???"
- * ```
- */
-@JsExport
-inline fun <T, E> Result<T, E>.getOrElse(f: () -> T): T =
-    when (this) {
-        is Success -> this.value
-        is Failure -> f()
-    }
-
-/**
- * Gets the inner value in a nested Result
- *
- * # Example
- * ```
- * val r1 = Success(Success("Superman")).inner() // Success("Clark Kent")
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<Result<T, E>, E>.inner(): Result<T, E> = this.fold({ it }, { Failure(it) })
-
-/**
- * Returns true if this is a [Success] with the value supplied, or false otherwise
- *
- * # Example
- * ```
- * Success(42).contains(42) // true
- * Success(40).contains(42) // false
- * Failure(39).contains(42) // false
- * ```
- */
-@JsExport
-@Suppress("NOTHING_TO_INLINE")
-inline fun <T, E> Result<T, E>.contains(i: T): Boolean =
-    when (this) {
-        is Success -> i == this.value
-        is Failure -> false
-    }
-
-/**
- * Builds a Result as a [Success] with the value supplied
- *
- * # Example
- * ```
- * 42.success() // Success(42)
- * ```
- */
-@JsExport
-fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
-
-/**
- * Builds a Result as a [Failure] with the value supplied
- *
- * # Example
- * ```
- * 400.failure() // Failure(400)
- * ```
- */
-@JsExport
-fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)
