@@ -5,9 +5,9 @@
 
 # kiit-result
 
-**A Kotlin `Result<T, E>` type where `Success` holds a value and `Failure` holds an error, each also carrying a status from kiit-codes' taxonomy.**
+**A Kotlin `Result<T, E>` type with a kiit-codes status on every branch, not just failure.**
 
-Optionally attach an `Action` to trace which operation produced a result across nested or chained calls.
+`Success` holds a value, `Failure` holds an error, and either can carry an `Action` recording which operation produced it, useful for tracing across nested or chained calls.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
@@ -118,30 +118,11 @@ asTry.onFailure { ex -> println("caught: ${ex.message}") }
 See [`samples/sample-kotlin`](./samples/sample-kotlin) for a runnable end-to-end Kotlin example, or
 [`samples/sample-java`](./samples/sample-java) for the same library used from plain Java.
 
-**Swift:** not yet distributed via SPM/XCFramework (the framework is `.framework`-only today,
-built locally). Companion-less members like `Outcomes`/`Options`/`Tries` get clean `.shared`
-access out of the box, and this module uses [SKIE](https://skie.touchlab.co/) for real,
-compiler-enforced Swift exhaustiveness over `Success`/`Failure` — a genuinely **flat** switch,
-simpler than kiit-codes' nested `Status` case, since `Result<T, E>` is only one sealed level deep:
-
-```swift
-import KiitResult
-
-let result = Success(value: KotlinInt(value: 42))
-
-func describe<T, E>(_ r: Result<T, E>) -> String {
-    switch onEnum(of: r) {
-    case .success(let s): return "ok: \(String(describing: s.value))"
-    case .failure(let f): return "err: \(String(describing: f.error))"
-    }
-}
-```
-
-Generic type params require `AnyObject` (box `Int`/`String` as `KotlinInt`/`NSString`), and
-Kotlin's `Nothing` doesn't widen to a concrete error type in Swift — see
-[`samples/sample-swift`](./samples/sample-swift) for the full, verified-working subset and exactly
-what does and doesn't work (including a confirmed-broken case: `flatMap` can't be used from Swift
-to construct new results).
+**Swift:** not yet distributed via SPM/XCFramework, but [SKIE](https://skie.touchlab.co/) already
+gives real, compiler-enforced Swift exhaustiveness over `Success`/`Failure`. See
+[`samples/sample-swift`](./samples/sample-swift) for a runnable example, or the
+[Swift Interop guide](https://www.kiit.dev/docs/kiit-result#swift-interop) for the full picture,
+including what doesn't work yet.
 
 ## Concepts
 
@@ -165,7 +146,7 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`Outcome<T>`** | `Result<T, Err>` — [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err` as the error type; the most commonly used alias. |
 | **`Validated<T>`** | `Result<T, Err.ErrorList>` — for validation, collecting multiple errors. |
 
-Composition operators mirror what you'd expect from `Result`/`Either` in other languages: `map`, `mapError`, `flatMap`/`then`, `fold`, `exists`/`existsError`, `getOrNull`/`getErrorOrNull`, `getOrElse`/`getOr`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `onSuccess`, `onFailure`, `transform`, `recover`, `flatten` (flattens a nested `Result`), plus `or`/`and` for combining two `Result`s, and `withStatus`/`withAction` for attaching a status/operation context after construction. Once attached, `action` survives `map`/`mapError`/`toOutcome()`/`toTry()`, the same as `status` does.
+Composition operators mirror what you'd expect from `Result`/`Either` in other languages — `map`, `flatMap`/`then`, `fold`, `getOrElse`, `recover`, and friends, plus `withStatus`/`withAction` for attaching a status/operation context after construction. See the [full operator reference](https://www.kiit.dev/docs/kiit-result#operators) for the complete list.
 
 A `List<Result<T, E>>` adds its own operators: `combine()` sequences the list into one `Result<List<T>, E>`, short-circuiting on the first `Failure`; `partition()` splits it into successes and errors; `allSuccess`/`allFailure`/`anySuccess`/`anyFailure` check the batch without building a new `Result`.
 
