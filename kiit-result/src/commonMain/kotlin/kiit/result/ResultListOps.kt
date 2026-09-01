@@ -10,9 +10,9 @@ import kotlin.js.JsExport
 import kotlin.jvm.JvmName
 
 /*
- * Operators on List<Result<T, E>> — necessarily extension functions, since Kotlin can't add
- * members to List itself. Kept in a separate file from ResultOps.kt because the receiver here is
- * a collection of Results, not a Result itself.
+ * Operators on List<Result<T, E>>, necessarily extension functions since Kotlin can't add members
+ * to List itself. Kept in a separate file from ResultOps.kt because the receiver here is a
+ * collection of Results, not a Result itself.
  */
 
 /**
