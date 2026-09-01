@@ -194,24 +194,3 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })
 
-/**
- * Builds a Result as a [Success] with the value supplied
- *
- * # Example
- * ```
- * 42.success() // Success(42)
- * ```
- */
-@JsExport
-fun <T> T.toSuccess(): Result<T, Nothing> = Success(this)
-
-/**
- * Builds a Result as a [Failure] with the value supplied
- *
- * # Example
- * ```
- * 400.failure() // Failure(400)
- * ```
- */
-@JsExport
-fun <E> E.toFailure(): Result<Nothing, E> = Failure(this)

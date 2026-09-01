@@ -24,6 +24,7 @@ All notable changes to kiit-result are documented here. Format follows
 ### Removed
 - `operate` — redundant with `flatMap`/`then` (the only difference, access to the whole `Result` instead of just the value, is already achievable by reading `status`/`action` into a local variable before calling `flatMap`). Never had any call sites in this repo.
 - `contains` — the value-equality special case of `exists` (`result.contains(x)` is exactly `result.exists { it == x }`). No precedent in Rust or kotlin-result, and no real call sites in this repo.
+- `toSuccess()`/`toFailure()` — redundant with the `Success(x)`/`Failure(x)` constructors already used everywhere. No real call sites, and their own KDoc examples had already gone stale (calling nonexistent `.success()`/`.failure()` names), a sign they'd been neglected.
 
 ### Fixed
 - `toOutcome()` no longer discards the original status when a `Failure`'s error is `null`. It now derives the `Err`'s message from the actual status instead of a hardcoded generic one.
