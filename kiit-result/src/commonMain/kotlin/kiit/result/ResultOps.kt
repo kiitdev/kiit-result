@@ -20,8 +20,8 @@ import kotlin.jvm.JvmName
  *   return type of a parameter lambda.
  * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
- * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare —
- *   same reasoning as `inner`, just a type-parameter bound instead of a shape.
+ * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare.
+ *   Same reasoning as `inner`, just a type-parameter bound instead of a shape.
  */
 
 /**
@@ -31,8 +31,8 @@ import kotlin.jvm.JvmName
  *
  * # Example
  * ```
- * val r1 = Success("Superman").flatMap { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMap { Success("???")        }  // Failure("Unknown")
+ * val r1 = Success("guest"  ).flatMap { Success("member") }  // Success("member")
+ * val r2 = Failure("Unknown").flatMap { Success("???")    }  // Failure("Unknown")
  * ```
  */
 @JsExport
@@ -45,8 +45,8 @@ inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T
  *
  * # Example
  * ```
- * val r1 = Success("Superman").then { Success("Clark Kent") }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).then { Success("???")        }  // Failure("Unknown")
+ * val r1 = Success("guest"  ).then { Success("member") }  // Success("member")
+ * val r2 = Failure("Unknown").then { Success("???")    }  // Failure("Unknown")
  * ```
  */
 @JsExport
@@ -63,8 +63,8 @@ inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, 
  *
  * # Example
  * ```
- * val r1 = Success("Superman").or(Success("Clark Kent"))  // Success("Superman")
- * val r2 = Failure("Unknown" ).or(Success("Clark Kent"))  // Success("Clark Kent")
+ * val r1 = Success("guest"  ).or(Success("member"))  // Success("guest")
+ * val r2 = Failure("Unknown").or(Success("member"))  // Success("member")
  * ```
  */
 @JsExport
@@ -92,8 +92,8 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
  *
  * # Example
  * ```
- * val r1 = Success("Superman").operate { it }  // Success("Superman")
- * val r2 = Failure("Unknown" ).operate { it }  // Failure("Unknown")
+ * val r1 = Success("guest"  ).operate { it }  // Success("guest")
+ * val r2 = Failure("Unknown").operate { it }  // Failure("Unknown")
  * ```
  */
 @JsExport
@@ -111,8 +111,8 @@ inline fun <T1, T2, E> Result<T1, E>.operate(op: (Result<T1, E>) -> Result<T2, E
  *
  * # Example
  * ```
- * val r1 = Success("Superman").flatMapError { "Clark Kent" }  // Success("Clark Kent")
- * val r2 = Failure("Unknown" ).flatMapError { "???"        }  // Failure("???")
+ * val r1 = Success("guest"  ).flatMapError { Success("recovered") }  // Success("guest")
+ * val r2 = Failure("timeout").flatMapError { Success("recovered") }  // Success("recovered")
  * ```
  */
 @JsExport
@@ -125,15 +125,15 @@ inline fun <T, E, E2> Result<T, E>.flatMapError(f: (E) -> Result<T, E2>): Result
 /**
  * Returns this unchanged if it's a [Success], or a new [Success] wrapping the result of applying
  * [transform] to the error if this is a [Failure]. Unlike [flatMapError], which can still produce
- * a [Failure], this unconditionally recovers. There's no lossless Failed→Passed status mapping, so
- * the recovered branch defaults to [Succeeded.SUCCESS] — matching [Success]'s own single-value
- * constructor default — while [Action] is preserved, since the operation identity continues
- * across the recovery.
+ * a [Failure], this unconditionally recovers. There's no lossless Failed→Passed status mapping,
+ * so the recovered branch defaults to [Succeeded.SUCCESS], matching [Success]'s own single-value
+ * constructor default. [Action] is preserved, since the operation identity continues across the
+ * recovery.
  *
  * # Example
  * ```
- * Success("Superman").recover { "???" }  // Success("Superman")
- * Failure("Unknown" ).recover { "???" }  // Success("???")
+ * Success("guest"  ).recover { "fallback" }  // Success("guest")
+ * Failure("Unknown").recover { "fallback" }  // Success("fallback")
  * ```
  */
 @JsExport
@@ -148,8 +148,8 @@ inline fun <T, E> Result<T, E>.recover(transform: (E) -> T): Result<T, Nothing> 
  *
  * # Example
  * ```
- * Success("Superman").getOrElse { "???" }      // "Superman"
- * Failure("Unknown" ).getOrElse { it }         // "Unknown"
+ * Success("guest"  ).getOrElse { "fallback" }  // "guest"
+ * Failure("Unknown").getOrElse { it }          // "Unknown"
  * ```
  */
 @JsExport
@@ -165,8 +165,8 @@ inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
  *
  * # Example
  * ```
- * Success("Superman").getOr("???")  // "Superman"
- * Failure("Unknown" ).getOr("???")  // "???"
+ * Success("guest"  ).getOr("fallback")  // "guest"
+ * Failure("Unknown").getOr("fallback")  // "fallback"
  * ```
  */
 @JsExport
@@ -179,8 +179,8 @@ inline fun <T, E> Result<T, E>.getOr(default: T): T =
 
 /**
  * Returns the value from this [Success], or rethrows the original error unchanged if this is a
- * [Failure] — unlike [Result.getOrThrow], which always builds a new exception, this propagates
- * the existing [Throwable] as-is (same identity, same stack trace). Only available once `E` is
+ * [Failure]. Unlike [Result.getOrThrow], which always builds a new exception, this propagates
+ * the existing [Throwable] as-is, same identity, same stack trace. Only available once `E` is
  * narrowed to [Throwable] (e.g. on a [Try]).
  *
  * # Example
@@ -205,7 +205,7 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
  *
  * # Example
  * ```
- * val r1 = Success(Success("Superman")).inner() // Success("Superman")
+ * val r1 = Success(Success("guest")).inner() // Success("guest")
  * ```
  */
 @JsExport

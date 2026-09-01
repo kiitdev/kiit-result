@@ -61,8 +61,8 @@ sealed class Result<out T, out E> {
      *
      * # Example
      * ```
-     * val r1 = Success("Superman").map { "Clark Kent" }  // Success("Clark Kent")
-     * val r2 = Failure("Unknown" ).map { "???"        }  // Failure("Unknown")
+     * val r1 = Success("guest" ).map { "member" }  // Success("member")
+     * val r2 = Failure("Unknown").map { "???"   }  // Failure("Unknown")
      * ```
      */
     inline fun <T2> map(f: (T) -> T2): Result<T2, E> =
@@ -78,8 +78,8 @@ sealed class Result<out T, out E> {
      *
      * # Example
      * ```
-     * val r1 = Success("Superman").mapError { "unknown" }  // Success("Superman")
-     * val r2 = Failure("error"    ).mapError { "unknown" }  // Failure("unknown")
+     * val r1 = Success("guest").mapError { "unknown" }  // Success("guest")
+     * val r2 = Failure("error").mapError { "unknown" }  // Failure("unknown")
      * ```
      */
     inline fun <E2> mapError(f: (E) -> E2): Result<T, E2> =
@@ -178,8 +178,8 @@ sealed class Result<out T, out E> {
 
     /**
      * Returns the value from this [Success], or throws if this is a [Failure]. The error is never
-     * silently dropped — if it's already a [Throwable] it's rethrown as-is, otherwise a new one
-     * is built from the status and error. No exception is constructed on the [Success] path.
+     * silently dropped. If it's already a [Throwable] it's rethrown as-is, otherwise a new one
+     * gets built from the status and error. No exception is constructed on the [Success] path.
      *
      * # Example
      * ```
