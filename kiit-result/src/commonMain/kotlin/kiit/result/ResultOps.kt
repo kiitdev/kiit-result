@@ -19,6 +19,8 @@ import kotlin.jvm.JvmName
  *   of a parameter lambda.
  * - `inner` needs a receiver narrowed to `Result<Result<T, E>, E>`, which only an extension
  *   function's receiver type can express.
+ * - `getOrRethrow` needs `E` narrowed to `Throwable`, a bound the class itself doesn't declare —
+ *   same reasoning as `inner`, just a type-parameter bound instead of a shape.
  */
 
 /**
@@ -151,6 +153,29 @@ inline fun <T, E> Result<T, E>.getOr(default: T): T =
     when (this) {
         is Success -> this.value
         is Failure -> default
+    }
+
+/**
+ * Returns the value from this [Success], or rethrows the original error unchanged if this is a
+ * [Failure] — unlike [Result.getOrThrow], which always builds a new exception, this propagates
+ * the existing [Throwable] as-is (same identity, same stack trace). Only available once `E` is
+ * narrowed to [Throwable] (e.g. on a [Try]).
+ *
+ * # Example
+ * ```
+ * val ok: Try<Int> = Success(42)
+ * ok.getOrRethrow()  // 42
+ *
+ * val bad: Try<Int> = Failure(IllegalStateException("boom"))
+ * bad.getOrRethrow() // throws the original IllegalStateException("boom")
+ * ```
+ */
+@JsExport
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
+    when (this) {
+        is Success -> this.value
+        is Failure -> throw this.error
     }
 
 /**

@@ -7,13 +7,14 @@ import kiit.result.Outcomes.success
 import kiit.result.Outcomes.unserved
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
  * Tests [Result]'s composition operators: `map`, `flatMap`/`then`, `fold`, `onSuccess`/
  * `onFailure`, `mapError`/`flatMapError`, `transform`, `getOrElse`/`getOr`/`getOrNull`/
- * `getErrorOrNull`, `exists`/`existsError`, `contains`, and `inner`, on both the `Success` and
- * `Failure` branch of each.
+ * `getErrorOrNull`, `getOrThrow`/`getErrorOrThrow`/`getOrRethrow`, `exists`/`existsError`,
+ * `contains`, and `inner`, on both the `Success` and `Failure` branch of each.
  */
 class ResultFunctionalTests {
     @Test
@@ -56,6 +57,56 @@ class ResultFunctionalTests {
 
         val result2 = success("peter parker")
         assertEquals(false, result2.existsError { true })
+    }
+
+    @Test
+    fun can_get_or_throw() {
+        val result1 = success("peter parker")
+        assertEquals("peter parker", result1.getOrThrow())
+
+        val result2 = unserved<String>("name unknown")
+        val ex = assertFailsWith<Exception> { result2.getOrThrow() }
+        assertEquals(Unserved.UNEXPECTED.message, ex.message)
+    }
+
+    @Test
+    fun can_get_or_throw_with_message() {
+        val result1 = success("peter parker")
+        assertEquals("peter parker", result1.getOrThrow { "expected a value" })
+
+        val result2 = unserved<String>("name unknown")
+        val ex = assertFailsWith<IllegalStateException> { result2.getOrThrow { "expected a value" } }
+        assertEquals("expected a value: ${Unserved.UNEXPECTED.message}", ex.message)
+    }
+
+    @Test
+    fun can_get_error_or_throw() {
+        val result1 = unserved<String>("name unknown")
+        assertEquals("name unknown", result1.getErrorOrThrow().message)
+
+        val result2 = success("peter parker")
+        assertFailsWith<IllegalStateException> { result2.getErrorOrThrow() }
+    }
+
+    @Test
+    fun can_get_error_or_throw_with_message() {
+        val result1 = unserved<String>("name unknown")
+        assertEquals("name unknown", result1.getErrorOrThrow { "expected a failure" }.message)
+
+        val result2 = success("peter parker")
+        val ex = assertFailsWith<IllegalStateException> { result2.getErrorOrThrow { "expected a failure" } }
+        assertEquals("expected a failure: peter parker", ex.message)
+    }
+
+    @Test
+    fun can_get_or_rethrow() {
+        val ok: Try<Int> = Success(42)
+        assertEquals(42, ok.getOrRethrow())
+
+        val original = IllegalStateException("boom")
+        val bad: Try<Int> = Failure(original)
+        val thrown = assertFailsWith<IllegalStateException> { bad.getOrRethrow() }
+        assertEquals(original, thrown)
     }
 
     @Test

@@ -177,6 +177,77 @@ sealed class Result<out T, out E> {
         }
 
     /**
+     * Returns the value from this [Success], or throws if this is a [Failure]. The error is never
+     * silently dropped — if it's already a [Throwable] it's rethrown as-is, otherwise a new one
+     * is built from the status and error. No exception is constructed on the [Success] path.
+     *
+     * # Example
+     * ```
+     * Success(42).getOrThrow()      // 42
+     * Failure("boom").getOrThrow()  // throws Exception("boom")
+     * ```
+     */
+    fun getOrThrow(): T =
+        when (this) {
+            is Success -> this.value
+            is Failure -> throw this.toThrowable()
+        }
+
+    /**
+     * Returns the value from this [Success], or throws with [message] prefixed if this is a
+     * [Failure]. The underlying failure is preserved as the thrown exception's cause. No
+     * exception is constructed on the [Success] path.
+     *
+     * # Example
+     * ```
+     * Success(42).getOrThrow { "expected a value" }      // 42
+     * Failure("boom").getOrThrow { "expected a value" }  // throws "expected a value: boom"
+     * ```
+     */
+    @JsName("getOrThrowMessage")
+    inline fun getOrThrow(message: () -> Any): T =
+        when (this) {
+            is Success -> this.value
+            is Failure -> {
+                val cause = this.toThrowable()
+                throw IllegalStateException("${message()}: ${cause.message}", cause)
+            }
+        }
+
+    /**
+     * Returns the error from this [Failure], or throws if this is a [Success]
+     *
+     * # Example
+     * ```
+     * Failure("boom").getErrorOrThrow()  // "boom"
+     * Success(42).getErrorOrThrow()      // throws IllegalStateException
+     * ```
+     */
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun getErrorOrThrow(): E =
+        when (this) {
+            is Success -> error("getErrorOrThrow() called on a Success value: ${this.value}")
+            is Failure -> this.error
+        }
+
+    /**
+     * Returns the error from this [Failure], or throws with [message] prefixed if this is a
+     * [Success]
+     *
+     * # Example
+     * ```
+     * Failure("boom").getErrorOrThrow { "expected a failure" }  // "boom"
+     * Success(42).getErrorOrThrow { "expected a failure" }      // throws "expected a failure: 42"
+     * ```
+     */
+    @JsName("getErrorOrThrowMessage")
+    inline fun getErrorOrThrow(message: () -> Any): E =
+        when (this) {
+            is Success -> error("${message()}: ${this.value}")
+            is Failure -> this.error
+        }
+
+    /**
      * Applies the supplied function if this is a [Success]
      *
      * @param f: the function to apply
@@ -389,4 +460,19 @@ data class Failure<out E>
          */
         @JsName("ofMessage")
         constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
+
+        /**
+         * Maps this [Failure]'s [error]/[status] to a [Throwable], for [getOrThrow]. Rethrows
+         * [error] as-is when it's already an exception, otherwise builds one from [status]/
+         * [error] so nothing is silently dropped. Not used by [toTry], which has its own,
+         * slightly different identity-preserving behavior for the already-[Exception] case.
+         */
+        @PublishedApi
+        internal fun toThrowable(): Throwable =
+            when (val err = this.error) {
+                is Exception -> err
+                is Err -> this.status.toException(listOf(err))
+                null -> Exception(this.status.message)
+                else -> Exception(err.toString())
+            }
     }
