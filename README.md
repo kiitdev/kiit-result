@@ -45,6 +45,25 @@ import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.codes.Restricted
 import kiit.codes.Succeeded
+import kiit.result.Outcome
+import kiit.result.Outcomes
+
+class UserService {
+    private val users = mutableMapOf<String, User>()
+
+    fun create(id: String, email: String): Outcome<User> {
+        // Restricted: a reserved id, not allowed
+        if (id == "admin") return Outcomes.restricted(Restricted.DENIED)
+        // Invalid: bad input
+        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
+        // Rejected: already exists
+        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
+        val user = User(id, email)
+        users[id] = user
+        // Succeeded: created
+        return Outcomes.success(user)
+    }
+}
 
 val outcome: Outcome<User> = userService.create("alice", "alice@example.com")
 when (val status = outcome.status) {
@@ -71,31 +90,18 @@ dependencies {
 **Return an `Outcome<T>` (`Result<T, Err>`) using the builder methods:**
 
 ```kotlin
-import kiit.codes.Invalid
-import kiit.codes.Rejected
-import kiit.codes.Restricted
 import kiit.result.Outcome
 import kiit.result.Outcomes
 
-class UserService {
-    private val users = mutableMapOf<String, User>()
-
-    fun create(id: String, email: String): Outcome<User> {
-        if (id == "admin") return Outcomes.restricted(Restricted.DENIED)
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
-        return Outcomes.success(user)
-    }
-}
+fun createUser(email: String): Outcome<String> =
+    if (email.isBlank()) Outcomes.invalid("email required") else Outcomes.success(email)
 ```
 
 **Compose with `map`/`flatMap`/`fold`:**
 
 ```kotlin
-userService.create("alice", "alice@example.com")
-    .map { it.email }
+createUser("alice@example.com")
+    .map { it.uppercase() }
     .onSuccess { println("registered: $it") }
     .onFailure { err -> println("could not register: ${err.message}") }
 ```
