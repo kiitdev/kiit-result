@@ -5,7 +5,7 @@
 
 **A Kotlin `Result<T, E>` type with a kiit-codes status on every branch, not just failure.**
 
-Every `Success` and `Failure` carries a **status** from kiit-codes' closed taxonomy, classifying the kind of success or failure outcome, not just whether one occurred. Unlike Rust's `Result`, Swift's `Result`, or kotlin-result, `Success` here isn't just a bare value, it carries the same kind of classification `Failure` does.
+Every `Success` and `Failure` carries a **status** from kiit-codes' closed taxonomy, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
