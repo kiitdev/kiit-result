@@ -3,9 +3,9 @@
   <img src="./assets/kiit-result-header.png" align="center" />
 </h1>
 
-**A Kotlin `Result<T, E>` type with a kiit-codes status on every branch, not just failure.**
+**A Kotlin `Result<T, E>` that also tells you the kind of success and failure.**
 
-Every `Success` and `Failure` carries a **status** from kiit-codes' closed taxonomy, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
+Every `Success` and `Failure` carries a **status** classifying the kind of outcome, unlike Rust's `Result`, Swift's `Result`, or other Kotlin `Result` types, where success is just a bare value. A `Success` might be a plain success, a pending operation, or an intentional skip; a `Failure` might be unauthorized, invalid input, or a conflict. That status comes from kiit-codes, an already-established taxonomy reused here instead of inventing a new one. `Outcome<T>` is the ready-made alias for everyday use, paired with `Try<T>`, `Option<T>`, and `Validated<T>` for exceptions, absence, and validation.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
