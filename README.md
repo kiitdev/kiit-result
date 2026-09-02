@@ -5,7 +5,7 @@
 
 **A Kotlin `Result<T, E>` type with a kiit-codes status on every branch, not just failure.**
 
-`Success` holds a value, `Failure` holds an error, and either can carry an `Action` recording which operation produced it, useful for tracing across nested or chained calls.
+Every `Success` and `Failure` carries a **status** from kiit-codes' closed taxonomy, classifying the kind of success or failure outcome, not just whether one occurred. Unlike Rust's `Result`, Swift's `Result`, or kotlin-result, `Success` here isn't just a bare value, it carries the same kind of classification `Failure` does.
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.kiit/kiit-result?color=blue)](https://central.sonatype.com/artifact/dev.kiit/kiit-result)
 [![Build](https://img.shields.io/github/actions/workflow/status/kiitdev/kiit-result/ci.yml?branch=main)](https://github.com/kiitdev/kiit-result/actions/workflows/ci.yml)
@@ -36,16 +36,24 @@ Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/docs/kiit-re
 
 ## Why
 
-Returning `null` loses the reason. Throwing is expensive for expected, recoverable failures. Either way, every caller ends up re-deriving the same success/failure branching logic by hand.
+Most approaches capture whether something succeeded or failed, but do not have a mechanism for also indicating what the kind of success or failure it was. This is the primary gap that this library is aiming to solve.
 
 **kiit-result is a `Result<T, E>` with kiit-codes' closed status taxonomy built in.** `Success` carries a `Passed` status, `Failure` carries a `Failed` status, and builders (`restricted()`, `invalid()`, ...) map each case to its matching category automatically. See [Concepts](#concepts) and [Builders](#builders) for the full picture.
 
 ```kotlin
+import kiit.codes.Invalid
+import kiit.codes.Rejected
+import kiit.codes.Restricted
+import kiit.codes.Succeeded
+
 val outcome: Outcome<User> = userService.create("alice", "alice@example.com")
-outcome.fold(
-    { user -> println("created ${user.id}") },
-    { err -> println("failed: ${err.message} (${outcome.status.name})") },
-)
+when (val status = outcome.status) {
+    is Succeeded -> println("created")
+    is Restricted -> println("not allowed: ${status.name}")
+    is Invalid -> println("bad input: ${status.name}")
+    is Rejected -> println("conflict: ${status.name}")
+    else -> println("failed: ${status.name}")
+}
 ```
 
 ## Start
@@ -65,6 +73,7 @@ dependencies {
 ```kotlin
 import kiit.codes.Invalid
 import kiit.codes.Rejected
+import kiit.codes.Restricted
 import kiit.result.Outcome
 import kiit.result.Outcomes
 
@@ -72,6 +81,7 @@ class UserService {
     private val users = mutableMapOf<String, User>()
 
     fun create(id: String, email: String): Outcome<User> {
+        if (id == "admin") return Outcomes.restricted(Restricted.DENIED)
         if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
         if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
         val user = User(id, email)
