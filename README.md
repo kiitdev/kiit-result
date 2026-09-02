@@ -41,6 +41,7 @@ Most approaches capture whether something succeeded or failed, but do not have a
 **kiit-result is a `Result<T, E>` with kiit-codes' closed status taxonomy built in.** `Success` carries a `Passed` status, `Failure` carries a `Failed` status, and builders (`restricted()`, `invalid()`, ...) map each case to its matching category automatically. See [Concepts](#concepts) and [Builders](#builders) for the full picture.
 
 ```kotlin
+import kiit.codes.Err
 import kiit.codes.Invalid
 import kiit.codes.Rejected
 import kiit.codes.Restricted
@@ -51,17 +52,18 @@ import kiit.result.Outcomes
 class UserService {
     private val users = mutableMapOf<String, User>()
 
-    fun create(id: String, email: String): Outcome<User> {
+    fun create(id: String, email: String): Outcome<User> = when {
         // Restricted: a reserved id, not allowed
-        if (id == "admin") return Outcomes.restricted(Restricted.DENIED)
+        id == "admin" -> Outcomes.restricted(Restricted.DENIED)
         // Invalid: bad input
-        if (email.isBlank()) return Outcomes.invalid(Invalid.BAD_REQUEST)
+        email.isBlank() -> Outcomes.invalid(Err.on("email", email, "email is required"))
         // Rejected: already exists
-        if (users.containsKey(id)) return Outcomes.rejected(Rejected.CONFLICT)
-        val user = User(id, email)
-        users[id] = user
+        users.containsKey(id) -> Outcomes.rejected(Rejected.CONFLICT)
         // Succeeded: created
-        return Outcomes.success(user)
+        else -> {
+            users[id] = it
+            Outcomes.success(User(id, email))
+        }
     }
 }
 
