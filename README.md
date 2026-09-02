@@ -36,22 +36,9 @@ Part of [Kiit](https://www.kiit.dev) · [Docs](https://www.kiit.dev/docs/kiit-re
 
 ## Why
 
-Returning `null` for "not found" loses the reason. Throwing for expected, recoverable failures (validation, a conflict, an unauthorized caller) is expensive and easy to over- or under-catch. And once you *do* return a status/error pair by convention, every caller ends up re-deriving the same success/failure branching logic by hand.
+Returning `null` loses the reason. Throwing is expensive for expected, recoverable failures. Either way, every caller ends up re-deriving the same success/failure branching logic by hand.
 
-**kiit-result is a `Result<T, E>` that composes the usual monadic operations with kiit-codes' closed status taxonomy**, instead of a bespoke or numeric status of its own. `Success` carries a [kiit-codes](https://github.com/kiitdev/kiit-codes) `Passed` status (`Succeeded`, `Pending`, `Excluded`, `Information`); `Failure` carries a `Failed` status (`Restricted`, `Invalid`, `Rejected`, `Unserved`). Builders map each common case to its matching category, so `restricted()` gives you `Restricted.DENIED`, `invalid()` gives you `Invalid.INVALID_VALUE`, and so on — without hand-rolling a status object at every call site.
-
-Modeling an operation this way means answering four separable questions, not one:
-
-1. **Did it work?** — `Success<T>` or `Failure<E>`.
-2. **What kind of outcome was it?** — `status: Status`, a closed taxonomy from kiit-codes (`Succeeded`, `Restricted`, `Invalid`, `Rejected`, ...).
-3. **What went wrong, specifically?** — the `Failure` branch's `error: E`, most commonly kiit-codes' `Err`, carrying per-instance detail a fixed status can't.
-4. **What was being done, and under what circumstances?** — an optional `action: Action?`, naming the operation and any correlation id/attributes, attached via `withAction`.
-
-It builds directly on kiit-codes rather than reimplementing status classification:
-
-1. **A monadic `Result<T, E>`** — `map`, `flatMap`/`then`, `fold`, `onSuccess`/`onFailure`, `getOrElse`, and friends, so success/failure handling composes without manual `if`/`else` branching.
-2. **A flexible error type** — the `Failure` branch's error type `E` can be anything: `String`, `Throwable`, [kiit-codes](https://github.com/kiitdev/kiit-codes)' `Err`, or your own domain type. Type aliases (`Try<T>`, `Option<T>`, `Outcome<T>`) cover the common cases.
-3. **Status-aware builders** — `restricted`/`invalid`/`rejected`/`unserved`/`excluded` build a `Result` pre-populated with the matching kiit-codes status category, so you rarely construct `Success`/`Failure` by hand.
+**kiit-result is a `Result<T, E>` with kiit-codes' closed status taxonomy built in.** `Success` carries a `Passed` status, `Failure` carries a `Failed` status, and builders (`restricted()`, `invalid()`, ...) map each case to its matching category automatically. See [Concepts](#concepts) and [Builders](#builders) for the full picture.
 
 ```kotlin
 val outcome: Outcome<User> = userService.create("alice", "alice@example.com")
@@ -101,14 +88,6 @@ userService.create("alice", "alice@example.com")
     .map { it.email }
     .onSuccess { println("registered: $it") }
     .onFailure { err -> println("could not register: ${err.message}") }
-```
-
-**Convert to a `Try<T>` to cross an exception-only boundary:**
-
-```kotlin
-// Wraps a Failure<Err> into a Failure<StatusException> from kiit-codes
-val asTry = userService.fetch("missing").toTry()
-asTry.onFailure { ex -> println("caught: ${ex.message}") }
 ```
 
 See [`samples/sample-kotlin`](./samples/sample-kotlin) for a runnable end-to-end Kotlin example, or
