@@ -86,7 +86,7 @@ when (val status = outcome.status) {
 
 ```kotlin
 dependencies {
-    implementation("dev.kiit:kiit-result:1.0.1")
+    implementation("dev.kiit:kiit-result:1.0.2")
 }
 ```
 
