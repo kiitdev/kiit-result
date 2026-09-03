@@ -6,6 +6,7 @@ import kiit.codes.Invalid
 import kiit.result.Failure
 import kiit.result.Outcome
 import kiit.result.Outcomes
+import kiit.result.Result
 import kiit.result.Success
 import kiit.result.Validated
 import kiit.result.Validations
@@ -16,6 +17,7 @@ fun main() {
     testOutcome()
     testValidation()
     testService()
+    testDomainErrors()
 }
 
 // Single-error validation with Outcome<T> (Result<T, Err>): picks a different status group
@@ -128,4 +130,26 @@ private fun report(label: String, outcome: Outcome<User>) {
     val httpCode = http.toCode(status)
     val detail = outcome.fold({ user -> "user=${user.id}" }, { err -> "error=${err.message}" })
     println("$label -> ${status.name} (success=${outcome.success}, http=$httpCode, $detail)")
+}
+
+// Same createTyped calls as testService's create, but the signature itself,
+// Result<CreateUserSuccess, CreateUserError>, already tells you every value and error possible.
+fun testDomainErrors() {
+    val service = UserService()
+
+    reportTyped("create alice", service.createTyped("alice", "alice@example.com", isAuthorized = true))
+    reportTyped("create alice again", service.createTyped("alice", "alice@example.com", isAuthorized = true))
+    reportTyped("create with invalid email", service.createTyped("bob", "not-an-email", isAuthorized = true))
+    reportTyped("create without authorization", service.createTyped("carol", "carol@example.com", isAuthorized = false))
+}
+
+private fun reportTyped(label: String, result: Result<CreateUserSuccess, CreateUserError>) {
+    val status = result.status
+    val httpCode = http.toCode(status)
+    val detail =
+        result.fold(
+            { outcome -> when (outcome) { is CreateUserSuccess.Created -> "user=${outcome.user.id}" } },
+            { error -> "error=$error" },
+        )
+    println("$label -> ${status.name} (success=${result.success}, http=$httpCode, $detail)")
 }
