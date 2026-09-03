@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram name="kiit-codes taxonomy" id="0">
-    <mxGraphModel dx="1568" dy="1323" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="706" pageHeight="860" math="0" shadow="0">
+    <mxGraphModel dx="135" dy="522" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="706" pageHeight="860" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -8,7 +8,7 @@
           <mxGeometry height="1146.16" width="896.5" x="1066" y="62" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#FBFCFE;" value="" vertex="1">
-          <mxGeometry height="308.75" width="896.5" x="1066" y="445" as="geometry" />
+          <mxGeometry height="318" width="896.5" x="1066" y="445" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CCCCCC;" value="" vertex="1">
           <mxGeometry height="187" width="225" x="1691" y="316" as="geometry" />
@@ -449,54 +449,54 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-44" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;spacing=10;" value="&lt;font&gt;&lt;b style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;On both branches, so you know the kind of&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;span style=&quot;color: rgb(0, 127, 255);&quot;&gt;Success&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;&amp;nbsp;and &lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(0, 127, 255), rgb(127, 127, 127));&quot;&gt;Failure&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="64" width="583" x="1370" y="771.89" as="geometry" />
+          <mxGeometry height="64" width="583" x="1370" y="781.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-45" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontColor=#4D4D4D;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Rich Status&lt;/b&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="30" width="138.97" x="1220.47" y="788.89" as="geometry" />
+          <mxGeometry height="30" width="138.97" x="1220.47" y="798.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-46" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;spacing=10;" value="&lt;font&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;span style=&quot;color: rgb(0, 127, 255);&quot;&gt;Outcome&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;,&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(0, 127, 255), rgb(127, 127, 127));&quot;&gt;Try&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;b style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(0, 127, 255), rgb(127, 127, 127));&quot;&gt;Option&lt;/span&gt;&lt;/b&gt;&lt;b style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;, &lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(0, 127, 255), rgb(127, 127, 127));&quot;&gt;Validated&lt;/span&gt;&lt;/b&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;font color=&quot;#808080&quot;&gt;, each with default error type&lt;/font&gt;&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="64" width="583" x="1373" y="849.89" as="geometry" />
+          <mxGeometry height="64" width="583" x="1373" y="859.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-47" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontColor=#4D4D4D;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Type Aliases&amp;nbsp;&lt;/b&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="30" width="157.53" x="1220.47" y="865.89" as="geometry" />
+          <mxGeometry height="30" width="157.53" x="1220.47" y="875.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;spacing=10;" value="&lt;font&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;Helpers like&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;color: rgb(0, 127, 255);&quot;&gt;restricted&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;,&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;b style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;color: rgb(0, 127, 255);&quot;&gt;invalid ...&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;b style=&quot;font-size: 18px;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;&amp;nbsp;pre-populate the right status&lt;/span&gt;&lt;/b&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="64" width="583" x="1370" y="1006.12" as="geometry" />
+          <mxGeometry height="64" width="583" x="1370" y="1016.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-49" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontColor=#4D4D4D;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Builders&lt;/b&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="30" width="125.48" x="1220.47" y="1023.1199999999999" as="geometry" />
+          <mxGeometry height="30" width="125.48" x="1220.47" y="1033.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-50" parent="1" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/identity/App_Registrations.svg;" value="" vertex="1">
-          <mxGeometry height="45" width="44.29" x="1151.2200000000003" y="860.89" as="geometry" />
+          <mxGeometry height="45" width="44.29" x="1151.2200000000003" y="870.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-51" parent="1" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/Connections.svg;" value="" vertex="1">
-          <mxGeometry height="48" width="48" x="1149.3600000000001" y="779.89" as="geometry" />
+          <mxGeometry height="48" width="48" x="1149.3600000000001" y="789.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-54" parent="1" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/ai_machine_learning/Bot_Services.svg;" value="" vertex="1">
-          <mxGeometry height="40.94" width="40.94" x="1148.53" y="937.6500000000002" as="geometry" />
+          <mxGeometry height="40.94" width="40.94" x="1148.53" y="947.6500000000002" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-55" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;spacing=10;" value="&lt;font&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b style=&quot;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(0, 127, 255), rgb(127, 127, 127));&quot;&gt;Status&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(128, 128, 128), rgb(127, 127, 127));&quot;&gt;, vocabulary on both branches, easy to pattern match&amp;nbsp;&lt;/span&gt;&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="64" width="583" x="1373" y="926.12" as="geometry" />
+          <mxGeometry height="64" width="583" x="1373" y="936.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-56" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontColor=#4D4D4D;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b style=&quot;&quot;&gt;AI Benefits&lt;/b&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="30" width="143" x="1221.34" y="943.12" as="geometry" />
+          <mxGeometry height="30" width="143" x="1221.34" y="953.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-57" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;1&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="34" width="34" x="1083" y="784.89" as="geometry" />
+          <mxGeometry height="34" width="34" x="1083" y="794.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-58" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;2&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="34" width="34" x="1083" y="862.89" as="geometry" />
+          <mxGeometry height="34" width="34" x="1083" y="872.89" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-59" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;4&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="34" width="34" x="1083" y="1018.12" as="geometry" />
+          <mxGeometry height="34" width="34" x="1083" y="1028.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-60" parent="1" style="ellipse;whiteSpace=wrap;html=1;shapeInside=1;aspect=fixed;align=center;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;3&lt;/b&gt;&lt;/span&gt;" vertex="1">
-          <mxGeometry height="34" width="34" x="1083" y="941.12" as="geometry" />
+          <mxGeometry height="34" width="34" x="1083" y="951.12" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-61" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;strokeColor=#C9D6E8;" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
-            <mxPoint x="1065.5" y="753.75" as="sourcePoint" />
-            <mxPoint x="1962.5" y="753.75" as="targetPoint" />
+            <mxPoint x="1065.5" y="763" as="sourcePoint" />
+            <mxPoint x="1962.5" y="763" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="PO0EIkLi17azEFAb3NV5-95" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;font color=&quot;#808080&quot;&gt;&lt;span style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Represent the success or failure of any operation, with a taxonomy based status, error detail, and optional context&amp;nbsp;&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
@@ -572,7 +572,7 @@
           <mxGeometry height="40.94" width="258.38" x="620.8699999999999" y="103.05999999999983" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-143" parent="1" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/general/Troubleshoot.svg;" value="" vertex="1">
-          <mxGeometry height="40.94" width="39.74" x="1149.73" y="1014.65" as="geometry" />
+          <mxGeometry height="40.94" width="39.74" x="1149.73" y="1024.65" as="geometry" />
         </mxCell>
         <mxCell id="jvUO90iGBCR5-kWGHNNq-144" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#CCCCCC;arcSize=4;" value="" vertex="1">
           <mxGeometry height="691.75" width="896.5" x="2069.5" y="62" as="geometry" />
@@ -732,6 +732,18 @@
             <mxPoint x="2069.5" y="445" as="sourcePoint" />
             <mxPoint x="2966.5" y="445" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="jvUO90iGBCR5-kWGHNNq-222" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="30" width="70.96000000000004" x="1201" y="716" as="geometry" />
+        </mxCell>
+        <mxCell id="jvUO90iGBCR5-kWGHNNq-220" parent="jvUO90iGBCR5-kWGHNNq-222" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;" value="&lt;font&gt;&lt;b style=&quot;color: rgb(255, 0, 0);&quot;&gt;Fixed&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="60" as="geometry" />
+        </mxCell>
+        <mxCell id="jvUO90iGBCR5-kWGHNNq-221" parent="jvUO90iGBCR5-kWGHNNq-222" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.security.lock_protected;" value="" vertex="1">
+          <mxGeometry height="15" width="10.96" x="60" y="7.5" as="geometry" />
+        </mxCell>
+        <mxCell id="jvUO90iGBCR5-kWGHNNq-226" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;" value="&lt;font color=&quot;#ff0000&quot;&gt;&lt;span&gt;&lt;b&gt;Open + Defaults&lt;/b&gt;&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="160" x="1359.44" y="716" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
