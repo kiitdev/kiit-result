@@ -38,6 +38,15 @@ export const Options = {
     return Options.build(f, () => Unserved.UNEXPECTED);
   },
 
+  /** Like `attempt`, for `f` that returns a promise. A rejection becomes `none` too. */
+  async attemptAsync<T>(f: () => PromiseLike<T> | T): Promise<Option<T>> {
+    try {
+      return new Success(await f());
+    } catch {
+      return new Failure(undefined, Unserved.UNEXPECTED);
+    }
+  },
+
   some<T>(value: T): Option<T> {
     return new Success(value);
   },

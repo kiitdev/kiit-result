@@ -1,7 +1,7 @@
 import { InvalidError, RejectedError, RestrictedError, UnservedError } from "@kiitdev/codes";
 import type { Invalid, Rejected, Restricted, Unserved } from "@kiitdev/codes";
 import type { Try } from "./aliases.js";
-import { Success } from "./result.js";
+import { Failure, Success } from "./result.js";
 import { asError, createBuilder } from "./builders/builder.js";
 import type { ErrorMapper } from "./builders/builder.js";
 
@@ -31,11 +31,24 @@ export const Tries = {
     try {
       return new Success(f());
     } catch (thrown) {
-      if (thrown instanceof RestrictedError) return builder.restricted({ cause: thrown, status: thrown.status as Restricted });
-      if (thrown instanceof InvalidError) return builder.invalid({ cause: thrown, status: thrown.status as Invalid });
-      if (thrown instanceof RejectedError) return builder.rejected({ cause: thrown, status: thrown.status as Rejected });
-      if (thrown instanceof UnservedError) return builder.unserved({ cause: thrown, status: thrown.status as Unserved });
-      return builder.unserved({ cause: asError(thrown) });
+      return failureFor(thrown);
+    }
+  },
+
+  /** Like `attempt`, for `f` that returns a promise. A rejection is handled the same way. */
+  async attemptAsync<T>(f: () => PromiseLike<T> | T): Promise<Try<T>> {
+    try {
+      return new Success(await f());
+    } catch (thrown) {
+      return failureFor(thrown);
     }
   },
 };
+
+function failureFor(thrown: unknown): Failure<Error> {
+  if (thrown instanceof RestrictedError) return builder.restricted({ cause: thrown, status: thrown.status as Restricted });
+  if (thrown instanceof InvalidError) return builder.invalid({ cause: thrown, status: thrown.status as Invalid });
+  if (thrown instanceof RejectedError) return builder.rejected({ cause: thrown, status: thrown.status as Rejected });
+  if (thrown instanceof UnservedError) return builder.unserved({ cause: thrown, status: thrown.status as Unserved });
+  return builder.unserved({ cause: asError(thrown) });
+}

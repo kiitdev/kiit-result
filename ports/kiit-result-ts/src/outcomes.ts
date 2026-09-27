@@ -20,12 +20,32 @@ function build<T>(f: () => T, onError: (error: Error) => Err): Outcome<T> {
   }
 }
 
+/** Awaits `f`, turning a rejection or a synchronous throw into a Failure built by `onError`. */
+async function buildAsync<T>(f: () => PromiseLike<T> | T, onError: (error: Error) => Err): Promise<Outcome<T>> {
+  try {
+    return new Success(await f());
+  } catch (thrown) {
+    return new Failure(onError(asError(thrown)));
+  }
+}
+
 function attempt<T>(f: () => T): Outcome<T>;
 function attempt<T>(action: string | Action, f: () => T): Outcome<T>;
 function attempt<T>(first: (() => T) | string | Action, second?: () => T): Outcome<T> {
   if (typeof first === "function") return build(first, Err.ex);
   const action = typeof first === "string" ? Action(first) : first;
   return build(second as () => T, Err.ex).withAction(action);
+}
+
+function attemptAsync<T>(f: () => PromiseLike<T> | T): Promise<Outcome<T>>;
+function attemptAsync<T>(action: string | Action, f: () => PromiseLike<T> | T): Promise<Outcome<T>>;
+async function attemptAsync<T>(
+  first: (() => PromiseLike<T> | T) | string | Action,
+  second?: () => PromiseLike<T> | T,
+): Promise<Outcome<T>> {
+  if (typeof first === "function") return buildAsync(first, Err.ex);
+  const action = typeof first === "string" ? Action(first) : first;
+  return (await buildAsync(second as () => PromiseLike<T> | T, Err.ex)).withAction(action);
 }
 
 /**
@@ -43,6 +63,12 @@ export const Outcomes = {
 
   /** Runs `f`. A throw becomes a Failure with an Err and `Unserved.UNEXPECTED`. */
   attempt,
+
+  /**
+   * Awaits `f`. A rejection, or a throw before the first await, becomes a Failure with an Err and
+   * `Unserved.UNEXPECTED`. Same two call forms as `attempt`.
+   */
+  attemptAsync,
 
   /** Runs `f`, with `onError` choosing the Err for a throw. */
   build,

@@ -95,6 +95,33 @@ export abstract class ResultBase<out T, out E> {
     return this.flatMap(f);
   }
 
+  /**
+   * Like `map`, for an async `f`. A Failure skips `f`. If `f` rejects, so does this promise,
+   * same as `map` throwing. Use `attemptAsync` to catch.
+   */
+  async mapAsync<T2>(f: (value: T) => Promise<T2>): Promise<Result<Awaited<T2>, E>> {
+    const mapped = this.map(f);
+    return mapped.success ? new Success(await mapped.value, mapped.status, mapped.action) : mapped;
+  }
+
+  /** Like `flatMap`, for an async `f` that returns a `Result`. A Failure skips `f`. */
+  async flatMapAsync<T2, E2>(f: (value: T) => Promise<Result<T2, E2>>): Promise<Result<T2, E | E2>> {
+    const mapped = this.map(f);
+    return mapped.success ? await mapped.value : mapped;
+  }
+
+  /** Like `onSuccess`, for an async `f`. Resolves to this once `f` is done. */
+  async onSuccessAsync(f: (value: T) => Promise<void> | void): Promise<this> {
+    await this.fold(f, () => undefined);
+    return this;
+  }
+
+  /** Like `onFailure`, for an async `f`. Resolves to this once `f` is done. */
+  async onFailureAsync(f: (error: E) => Promise<void> | void): Promise<this> {
+    await this.fold(() => undefined, f);
+    return this;
+  }
+
   /** This if it's a `Success`, otherwise `other`. */
   abstract or<T2, E2>(other: Result<T2, E2>): Result<T | T2, E2>;
 
