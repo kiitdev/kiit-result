@@ -1,8 +1,8 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { Succeeded, Unserved, assertNever } from "@kiitdev/codes";
-import type { Failed, Passed } from "@kiitdev/codes";
-import { Failure, Success } from "../src/index.js";
-import type { Result } from "../src/index.js";
+import { Err, Invalid, Rejected, Restricted, Succeeded, Unserved, assertNever } from "@kiitdev/codes";
+import type { ErrorList, Failed, HasStatus, Passed } from "@kiitdev/codes";
+import { Failure, Outcomes, Success, failure, success } from "../src/index.js";
+import type { Option, Outcome, Result, Try, Validated } from "../src/index.js";
 
 // TS-only tests, no Kotlin equivalent: narrowing, exhaustiveness, variance and thenable safety.
 
@@ -78,5 +78,66 @@ describe("immutability", () => {
     expect(original.value).toBe(1);
     expect(original.status).toEqual(Succeeded.SUCCESS);
     expect(mapped.value).toBe(2);
+  });
+});
+
+describe("status groups narrow with the branch", () => {
+  it("is exhaustive over the four Failed groups on the failure branch", () => {
+    function label(r: Result<number, string>): string {
+      if (r.success) return "ok";
+      switch (r.status.group) {
+        case "Restricted":
+          return "restricted";
+        case "Invalid":
+          return "invalid";
+        case "Rejected":
+          return "rejected";
+        case "Unserved":
+          return "unserved";
+        default:
+          return assertNever(r.status);
+      }
+    }
+    expect(label(new Failure("x", Restricted.DENIED))).toBe("restricted");
+    expect(label(new Failure("x", Invalid.BAD_REQUEST))).toBe("invalid");
+    expect(label(new Failure("x", Rejected.CONFLICT))).toBe("rejected");
+    expect(label(new Failure("x"))).toBe("unserved");
+    expect(label(new Success(1))).toBe("ok");
+  });
+
+  it("doesn't allow value or error before narrowing", () => {
+    function read(r: Result<number, string>): void {
+      // @ts-expect-error `value` only exists once narrowed to Success
+      r.value;
+      // @ts-expect-error `error` only exists once narrowed to Failure
+      r.error;
+    }
+    expect(read).toBeTypeOf("function");
+  });
+});
+
+describe("aliases and builders", () => {
+  it("defines each alias as a Result with the matching error type", () => {
+    expectTypeOf<Outcome<number>>().toEqualTypeOf<Result<number, Err>>();
+    expectTypeOf<Try<number>>().toEqualTypeOf<Result<number, Error>>();
+    expectTypeOf<Option<number>>().toEqualTypeOf<Result<number, undefined>>();
+    expectTypeOf<Validated<number>>().toEqualTypeOf<Result<number, ErrorList>>();
+  });
+
+  it("returns the concrete branch, assignable to any Result of that error type", () => {
+    expectTypeOf(Outcomes.invalid("x")).toEqualTypeOf<Failure<Err>>();
+    expectTypeOf(Outcomes.success(1)).toEqualTypeOf<Success<number>>();
+    const anyT: Outcome<string> = Outcomes.invalid("x");
+    const other: Outcome<Date> = Outcomes.invalid("x");
+    expect([anyT.success, other.success]).toEqual([false, false]);
+  });
+
+  it("requires the right status group for HasStatus helpers", () => {
+    class Bad implements HasStatus<Failed> {
+      readonly status: Failed = Unserved.UNEXPECTED;
+    }
+    // @ts-expect-error a value with a Failed status can't be wrapped by success()
+    success(new Bad());
+    expect(failure(new Bad()).success).toBe(false);
   });
 });
