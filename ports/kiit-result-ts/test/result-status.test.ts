@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { Err, Excluded, Invalid, Pending, Rejected, Restricted, Succeeded, Unserved } from "@kiitdev/codes";
-import { Failure, Success } from "../src/index.js";
+import { Failure, Outcomes, Success } from "../src/index.js";
 import { ensureFailure, ensureSuccess } from "./support.js";
 
 // Ported from ResultStatusTests.kt. Not ported: the cases that pass a per-instance message to
-// Success/Failure (`Success(42, "created")`) or use the Outcomes builders; those need per-instance
-// status messages, which the TS port doesn't have, and the builders arrive in a later phase.
+// Success/Failure (`Success(42, "created")`), since the TS port doesn't have per-instance status
+// messages.
 
 describe("Status taxonomy as seen through Result", () => {
   it("has the success flag per group", () => {
@@ -24,6 +24,7 @@ describe("Success", () => {
   it("defaults to Succeeded.SUCCESS", () => {
     ensureSuccess(new Success(42), Succeeded.SUCCESS, 42);
     ensureSuccess(Success.of(42), Succeeded.SUCCESS, 42);
+    ensureSuccess(Outcomes.pending(42), Pending.ACCEPTED, 42);
   });
 
   it("keeps an explicit status", () => {
@@ -43,5 +44,10 @@ describe("Failure", () => {
 
   it("keeps an explicit status", () => {
     ensureFailure(new Failure(Err.of("invalid email"), Invalid.BAD_REQUEST), Invalid.BAD_REQUEST, "invalid email");
+    ensureFailure(
+      Outcomes.invalid({ err: Err.of("invalid email"), status: Invalid.BAD_REQUEST }),
+      Invalid.BAD_REQUEST,
+      "invalid email",
+    );
   });
 });
