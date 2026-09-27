@@ -390,7 +390,11 @@ export class Failure<out E> extends ResultBase<never, E> {
     return new Failure(this.toThrowable(), this.status, this.action);
   }
 
-  /** The error as an `Error`, so nothing gets dropped. Internal, don't call it directly. */
+  /**
+   * The error as an `Error`, so nothing gets dropped. Used by getOrThrow and toTry.
+   *
+   * @internal
+   */
   toThrowable(): Error {
     const error: unknown = this.error;
     if (error instanceof Error) return error;
