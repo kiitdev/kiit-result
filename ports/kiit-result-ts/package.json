@@ -1,0 +1,54 @@
+{
+  "name": "@kiitdev/result",
+  "version": "0.0.1",
+  "description": "Result<T, E> with a kiit-codes Status on both the success and failure branches",
+  "keywords": [
+    "result",
+    "error-handling",
+    "typescript",
+    "status",
+    "outcome"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://kiit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiitdev/kiit-result.git",
+    "directory": "ports/kiit-result-ts"
+  },
+  "bugs": {
+    "url": "https://github.com/kiitdev/kiit-result/issues"
+  },
+  "author": "CodeHelix <https://kiit.dev>",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "peerDependencies": {
+    "@kiitdev/codes": "^0.9.0"
+  },
+  "devDependencies": {
+    "@kiitdev/codes": "file:../../../kiit-codes/ports/kiit-codes-ts",
+    "@types/node": "24.13.4",
+    "typescript": "5.9.3",
+    "vitest": "^5.0.0"
+  }
+}

@@ -2,6 +2,7 @@
   "name": "sample-ts",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc",
@@ -9,9 +10,10 @@
   },
   "devDependencies": {
     "typescript": "5.9.3",
-    "@types/node": "20.14.0"
+    "@types/node": "24.13.4"
   },
   "dependencies": {
-    "@kiit/result": "file:../../kiit-result/build/dist/js/productionLibrary"
+    "@kiitdev/codes": "file:../../../kiit-codes/ports/kiit-codes-ts",
+    "@kiitdev/result": "file:../../ports/kiit-result-ts"
   }
 }
