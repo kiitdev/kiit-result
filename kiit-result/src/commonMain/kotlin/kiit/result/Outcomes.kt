@@ -13,7 +13,7 @@ import kotlin.jvm.JvmStatic
 interface OutcomeBuilder : Builder<Err> {
     override fun errorFromEx(ex: Throwable, defaultStatus: Status): Err = Err.ex(ex)
 
-    override fun errorFromStr(message: String?, defaultStatus: Status): Err = Err.of(message ?: defaultStatus.message)
+    override fun errorFromStr(message: String?, defaultStatus: Status): Err = Err.of(message ?: defaultStatus.title)
 
     override fun errorFromErr(err: Err, defaultStatus: Status): Err = err
 }

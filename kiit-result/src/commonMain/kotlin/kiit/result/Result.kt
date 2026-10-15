@@ -52,7 +52,7 @@ sealed class Result<out T, out E> {
      * These are here for convenience both internally and externally
      */
     val success: Boolean get() = this is Success
-    val message: String get() = status.message
+    val message: String get() = status.title
 
     /**
      * Applies supplied function `f` if this is a [Success]
@@ -390,8 +390,8 @@ sealed class Result<out T, out E> {
             is Failure -> {
                 when (this.error) {
                     is Exception -> this as Try<T>
-                    is Err -> Failure(this.status.toException(listOf(this.error)), this.status, this.action)
-                    null -> Failure(Exception(this.status.message), this.status, this.action)
+                    is Err -> Failure(this.status.toException(errors = listOf(this.error)), this.status, this.action)
+                    null -> Failure(Exception(this.status.title), this.status, this.action)
                     else -> Failure(Exception(this.error.toString()), this.status, this.action)
                 }
             }
@@ -492,8 +492,8 @@ data class Failure<out E>
         internal fun toThrowable(): Throwable =
             when (val err = this.error) {
                 is Exception -> err
-                is Err -> this.status.toException(listOf(err))
-                null -> Exception(this.status.message)
+                is Err -> this.status.toException(errors = listOf(err))
+                null -> Exception(this.status.title)
                 else -> Exception(err.toString())
             }
     }

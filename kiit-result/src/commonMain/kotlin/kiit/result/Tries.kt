@@ -19,7 +19,7 @@ interface TryBuilder : Builder<Throwable> {
     override fun errorFromEx(ex: Throwable, defaultStatus: Status): Throwable = ex
 
     override fun errorFromStr(message: String?, defaultStatus: Status): Throwable =
-        Throwable(message ?: defaultStatus.message)
+        Throwable(message ?: defaultStatus.title)
 
     override fun errorFromErr(err: Err, defaultStatus: Status): Throwable = Throwable(err.message, err.cause)
 }
@@ -39,13 +39,13 @@ object Tries : TryBuilder {
             val data = f()
             Success(data)
         } catch (e: StatusException.RestrictedException) {
-            Tries.restricted(e, e.status as? Restricted)
+            Tries.restricted(e, e.status)
         } catch (e: StatusException.InvalidException) {
-            Tries.invalid(e, e.status as? Invalid)
+            Tries.invalid(e, e.status)
         } catch (e: StatusException.RejectedException) {
-            Tries.rejected(e, e.status as? Rejected)
+            Tries.rejected(e, e.status)
         } catch (e: StatusException.UnservedException) {
-            Tries.unserved(e, e.status as? Unserved)
+            Tries.unserved(e, e.status)
         } catch (e: Throwable) {
             Tries.unserved(e)
         }
