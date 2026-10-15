@@ -66,7 +66,7 @@ class ResultFunctionalTests {
 
         val result2 = unserved<String>("name unknown")
         val ex = assertFailsWith<Exception> { result2.getOrThrow() }
-        assertEquals(Unserved.UNEXPECTED.message, ex.message)
+        assertEquals(Unserved.UNEXPECTED.title, ex.message)
     }
 
     @Test
@@ -76,7 +76,7 @@ class ResultFunctionalTests {
 
         val result2 = unserved<String>("name unknown")
         val ex = assertFailsWith<IllegalStateException> { result2.getOrThrow { "expected a value" } }
-        assertEquals("expected a value: ${Unserved.UNEXPECTED.message}", ex.message)
+        assertEquals("expected a value: ${Unserved.UNEXPECTED.title}", ex.message)
     }
 
     @Test
@@ -171,7 +171,7 @@ class ResultFunctionalTests {
         val result2 = result1.map { name -> "$name : spider-man" }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
-        assertEquals(Unserved.UNEXPECTED.message, result2.message)
+        assertEquals(Unserved.UNEXPECTED.title, result2.status.title)
         assertEquals("??", result2.getOrElse { "??" })
     }
 
@@ -181,7 +181,7 @@ class ResultFunctionalTests {
         val result2 = result1.flatMap { name -> success("$name : spider-man") }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
-        assertEquals(Unserved.UNEXPECTED.message, result2.message)
+        assertEquals(Unserved.UNEXPECTED.title, result2.status.title)
         assertEquals("??", result2.getOrElse { "??" })
     }
 
@@ -191,7 +191,7 @@ class ResultFunctionalTests {
         val result2 = result1.map { name -> "$name : spider-man" }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
-        assertEquals(Unserved.UNEXPECTED.message, result2.message)
+        assertEquals(Unserved.UNEXPECTED.title, result2.status.title)
         assertEquals("??", result2.getOrElse { "??" })
     }
 
@@ -201,7 +201,7 @@ class ResultFunctionalTests {
         val result2 = result1.mapError { _ -> 0 }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
-        assertEquals(Unserved.UNEXPECTED.message, result2.message)
+        assertEquals(Unserved.UNEXPECTED.title, result2.status.title)
         result2.onFailure {
             assertEquals(0, it)
         }
@@ -213,7 +213,7 @@ class ResultFunctionalTests {
         val result2 = result1.orElse { Failure(0) }
         assertEquals(false, result2.success)
         assertEquals(Unserved.UNEXPECTED, result2.status)
-        assertEquals(Unserved.UNEXPECTED.message, result2.message)
+        assertEquals(Unserved.UNEXPECTED.title, result2.status.title)
         result2.onFailure {
             assertEquals(0, it)
         }
@@ -232,7 +232,7 @@ class ResultFunctionalTests {
 
         assertEquals(true, r2.success)
         assertEquals(Succeeded.SUCCESS, r2.status)
-        assertEquals(Succeeded.SUCCESS.message, r2.message)
+        assertEquals(Succeeded.SUCCESS.title, r2.status.title)
         r2.onSuccess {
             assertEquals("peter parker : spider-man", it)
         }

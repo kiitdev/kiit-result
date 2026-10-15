@@ -10,17 +10,15 @@ import kotlin.test.assertEquals
 interface ResultTestSupport {
     /**
      * Asserts [result] is a [Success] holding [expectedValue], with a status matching
-     * [expectedStatus] (or [expectedMessage], if the message was overridden from the default).
+     * [expectedStatus].
      */
     fun <T> ensureSuccess(
         result: Result<T, Err>,
         expectedStatus: Status,
-        expectedValue: T,
-        expectedMessage: String? = null
+        expectedValue: T
     ) {
         assertEquals(true, result.success)
-        assertEquals(expectedMessage ?: expectedStatus.message, result.status.message)
-        assertEquals(expectedMessage ?: expectedStatus.message, result.message)
+        assertEquals(expectedStatus, result.status)
 
         result.onSuccess { value ->
             assertEquals(expectedValue, value)
@@ -28,19 +26,16 @@ interface ResultTestSupport {
     }
 
     /**
-     * Asserts [result] is a [Failure] with a status matching [expectedStatus] (or
-     * [expectedStatusMsg], if the message was overridden), and an error value matching
+     * Asserts [result] is a [Failure] with a status matching [expectedStatus], and an error value matching
      * [expectedError], either directly (`String`) or via [Err.ErrorInfo.message].
      */
     fun <T> ensureFailure(
         result: Result<T, *>,
         expectedStatus: Status,
-        expectedStatusMsg: String? = null,
         expectedError: String? = null
     ) {
         assertEquals(false, result.success)
-        assertEquals(expectedStatusMsg ?: expectedStatus.message, result.status.message)
-        assertEquals(expectedStatusMsg ?: expectedStatus.message, result.message)
+        assertEquals(expectedStatus, result.status)
         result.onFailure {
             when (it) {
                 is String -> assertEquals(expectedError, it)
