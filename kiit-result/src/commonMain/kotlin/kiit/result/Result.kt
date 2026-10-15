@@ -52,7 +52,6 @@ sealed class Result<out T, out E> {
      * These are here for convenience both internally and externally
      */
     val success: Boolean get() = this is Success
-    val message: String get() = status.title
 
     /**
      * Applies supplied function `f` if this is a [Success]
@@ -423,7 +422,7 @@ sealed class Result<out T, out E> {
  * JS/TS note: covariance erases cleanly to plain TS generics. Extension functions (`flatMap`,
  * `getOrElse`, etc., in `ResultOps.kt`) export as flat top-level functions taking the receiver as
  * an explicit first parameter, and the `@JsName`d secondary constructors below become `static`
- * factory methods (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
+ * factory methods (`Success.of(42)`), not `new Success(42)`.
  */
 @JsExport
 data class Success<out T>
@@ -441,14 +440,6 @@ data class Success<out T>
          */
         @JsName("of")
         constructor(value: T) : this(value, Succeeded.SUCCESS)
-
-        /**
-         * Initialize using explicitly supplied message
-         * @param value : Value representing the success
-         * @param message : Optional message for the status
-         */
-        @JsName("ofMessage")
-        constructor(value: T, message: String) : this(value, Status.ofStatus(message, null, Succeeded.SUCCESS))
     }
 
 /**
@@ -473,14 +464,6 @@ data class Failure<out E>
          */
         @JsName("of")
         constructor(error: E) : this(error, Unserved.UNEXPECTED)
-
-        /**
-         * Initialize using explicitly supplied message
-         * @param error : Error representing the failure
-         * @param message : Optional message for the status
-         */
-        @JsName("ofMessage")
-        constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
 
         /**
          * Maps this [Failure]'s [error]/[status] to a [Throwable], for [getOrThrow]. Rethrows

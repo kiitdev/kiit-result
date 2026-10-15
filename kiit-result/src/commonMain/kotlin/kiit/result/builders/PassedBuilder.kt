@@ -8,7 +8,6 @@ import kiit.codes.Excluded
 import kiit.codes.Information
 import kiit.codes.Passed
 import kiit.codes.Pending
-import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.result.Result
 import kiit.result.Success
@@ -28,40 +27,24 @@ interface PassedBuilder<out E> {
     // shape through the same builder methods.
     fun <T> success(): Result<T?, E> = Success(null)
 
-    @JsName("successMessage")
-    fun <T> success(value: T, message: String? = null): Result<T, E> =
-        Success(value, Status.ofStatus(message, null, Succeeded.SUCCESS))
-
     @JsName("successStatus")
-    fun <T> success(value: T, status: Passed.Succeeded): Result<T, E> = Success(value, status)
+    fun <T> success(value: T, status: Passed.Succeeded = Succeeded.DEFAULT): Result<T, E> = Success(value, status)
 
-    fun <T> pending(): Result<T?, E> = Success(null, status = Pending.ACCEPTED)
-
-    @JsName("pendingMessage")
-    fun <T> pending(value: T, message: String? = null): Result<T, E> =
-        Success(value, Status.ofStatus(message, null, Pending.ACCEPTED))
+    fun <T> pending(): Result<T?, E> = Success(null, status = Pending.DEFAULT)
 
     @JsName("pendingStatus")
-    fun <T> pending(value: T, status: Passed.Pending): Result<T, E> = Success(value, status)
+    fun <T> pending(value: T, status: Passed.Pending = Pending.DEFAULT): Result<T, E> = Success(value, status)
 
     // An excluded item is modeled as a Success, see kiit-codes' Passed.Excluded. An item that
     // was intentionally left out of an operation (deduplicated, disqualified, skipped by a
     // filter) isn't a failure, so this builds a [Success], not a [Failure].
-    fun <T> excluded(): Result<T?, E> = Success(null, status = Excluded.OMITTED)
-
-    @JsName("excludedMessage")
-    fun <T> excluded(value: T, message: String? = null): Result<T, E> =
-        Success(value, Status.ofStatus(message, null, Excluded.OMITTED))
+    fun <T> excluded(): Result<T?, E> = Success(null, status = Excluded.DEFAULT)
 
     @JsName("excludedStatus")
-    fun <T> excluded(value: T, status: Passed.Excluded): Result<T, E> = Success(value, status)
+    fun <T> excluded(value: T, status: Passed.Excluded = Excluded.DEFAULT): Result<T, E> = Success(value, status)
 
-    fun <T> information(): Result<T?, E> = Success(null, status = Information.NOTICE)
-
-    @JsName("informationMessage")
-    fun <T> information(value: T, message: String? = null): Result<T, E> =
-        Success(value, Status.ofStatus(message, null, Information.NOTICE))
+    fun <T> information(): Result<T?, E> = Success(null, status = Information.DEFAULT)
 
     @JsName("informationStatus")
-    fun <T> information(value: T, status: Passed.Information): Result<T, E> = Success(value, status)
+    fun <T> information(value: T, status: Passed.Information = Information.DEFAULT): Result<T, E> = Success(value, status)
 }
