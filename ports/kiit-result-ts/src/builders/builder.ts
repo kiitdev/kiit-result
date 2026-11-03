@@ -106,7 +106,7 @@ function failed<S extends Failed, E>(mapper: ErrorMapper<E>, base: S): FailureBu
 /** Builds a Builder for an error type `E`, given how to make an `E` from a message, Error or Err. */
 export function createBuilder<E>(mapper: ErrorMapper<E>): Builder<E> {
   const unserved = failed(mapper, Unserved.UNEXPECTED);
-  const success = passed(Succeeded.SUCCESS);
+  const success = passed(Succeeded.DEFAULT);
 
   function ofIf<T>(
     condition: boolean,
@@ -121,9 +121,9 @@ export function createBuilder<E>(mapper: ErrorMapper<E>): Builder<E> {
 
   return {
     success,
-    pending: passed(Pending.ACCEPTED),
-    excluded: passed(Excluded.OMITTED),
-    information: passed(Information.NOTICE),
+    pending: passed(Pending.DEFAULT),
+    excluded: passed(Excluded.DEFAULT),
+    information: passed(Information.DEFAULT),
     restricted: failed(mapper, Restricted.DENIED),
     invalid: failed(mapper, Invalid.INVALID_VALUE),
     rejected: failed(mapper, Rejected.RULE_VIOLATION),

@@ -20,14 +20,11 @@ public class JavaInteropTest {
 
     @Test
     public void successConstructorHasOverloadsForConvenienceAndForJavaInterop() {
-        // 4 ways in from Java: bare value, value+message (hand-rolled secondary), value+status
-        // (new @JvmOverloads-generated overload), full value+status+action (primary constructor).
+        // 3 ways in from Java: bare value, value+status (@JvmOverloads-generated overload),
+        // full value+status+action (primary constructor).
         Success<Integer> bare = new Success<>(42);
         assertEquals(Integer.valueOf(42), bare.getValue());
         assertEquals("SUCCESS", bare.getStatus().getName());
-
-        Success<Integer> withMsg = new Success<>(42, "created via convenience overload");
-        assertEquals("created via convenience overload", withMsg.getStatus().getMessage());
 
         // Fully-qualified: kiit-codes' `Succeeded` is a Kotlin typealias for `Passed.Succeeded`,
         // and typealiases are erased at the bytecode level, so Java can't import or see them.

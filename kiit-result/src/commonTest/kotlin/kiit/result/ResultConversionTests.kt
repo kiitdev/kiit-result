@@ -1,9 +1,13 @@
 package kiit.result
 
+import kiit.codes.Err
+import kiit.codes.Invalid
 import kiit.codes.Restricted
+import kiit.codes.StatusException
 import kiit.codes.Unserved
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 /**
  * Tests [Result.toOutcome]/[Result.toTry]'s status/error content consistency, especially the
@@ -16,7 +20,7 @@ class ResultConversionTests {
 
         val retained = failure.toOutcome(retainStatus = true)
         assertEquals(Restricted.DENIED, retained.status)
-        assertEquals(Restricted.DENIED.message, retained.getErrorOrNull()?.message)
+        assertEquals(Restricted.DENIED.title, retained.getErrorOrNull()?.message)
     }
 
     @Test
@@ -25,7 +29,7 @@ class ResultConversionTests {
 
         val discarded = failure.toOutcome(retainStatus = false)
         assertEquals(Unserved.UNEXPECTED, discarded.status)
-        assertEquals(Unserved.UNEXPECTED.message, discarded.getErrorOrNull()?.message)
+        assertEquals(Unserved.UNEXPECTED.title, discarded.getErrorOrNull()?.message)
     }
 
     @Test
@@ -35,5 +39,17 @@ class ResultConversionTests {
         val outcome = failure.toOutcome()
         assertEquals(Restricted.DENIED, outcome.status)
         assertEquals("boom", outcome.getErrorOrNull()?.message)
+    }
+
+    @Test
+    fun to_try_with_err_error_carries_original_status_and_errors() {
+        val err = Err.of("bad email")
+        val failure: Result<Int, Err> = Failure(err, Invalid.BAD_REQUEST)
+
+        val tried = failure.toTry()
+        val ex = assertIs<StatusException.InvalidException>(tried.getErrorOrNull())
+        assertEquals(Invalid.BAD_REQUEST, ex.status)
+        assertEquals(listOf(err), ex.errors)
+        assertEquals(Invalid.BAD_REQUEST, tried.status)
     }
 }

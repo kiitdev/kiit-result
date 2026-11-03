@@ -18,15 +18,13 @@ export function unserved<T>(message: string): Outcome<T> {
 
 export function ensureSuccess<T>(result: Result<T, Err>, expectedStatus: Status, expectedValue: T): void {
   expect(result.success).toBe(true);
-  expect(result.status.message).toBe(expectedStatus.message);
-  expect(result.message).toBe(expectedStatus.message);
+  expect(result.status.title).toBe(expectedStatus.title);
   result.onSuccess((value) => expect(value).toEqual(expectedValue));
 }
 
 export function ensureFailure<T>(result: Result<T, unknown>, expectedStatus: Status, expectedError?: string): void {
   expect(result.success).toBe(false);
-  expect(result.status.message).toBe(expectedStatus.message);
-  expect(result.message).toBe(expectedStatus.message);
+  expect(result.status.title).toBe(expectedStatus.title);
   result.onFailure((error) => {
     if (typeof error === "string") expect(error).toBe(expectedError);
     else if (typeof error === "object" && error !== null && "kind" in error) {

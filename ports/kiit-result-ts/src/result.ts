@@ -39,11 +39,6 @@ export abstract class ResultBase<out T, out E> {
   abstract readonly status: Status;
   abstract readonly action?: Action;
 
-  /** The status' message. */
-  get message(): string {
-    return this.status.message;
-  }
-
   /** Applies `f` to the value if this is a `Success`. Keeps status and action. */
   abstract map<T2>(f: (value: T) => T2): Result<T2, E>;
 
@@ -398,9 +393,9 @@ export class Failure<out E> extends ResultBase<never, E> {
   toThrowable(): Error {
     const error: unknown = this.error;
     if (error instanceof Error) return error;
-    if (error === null || error === undefined) return new Error(this.status.message);
+    if (error === null || error === undefined) return new Error(this.status.title);
     if (typeof error === "object" && "kind" in error && "message" in error) {
-      return toError(this.status, [error as Err]);
+      return toError(this.status, undefined, [error as Err]);
     }
     return new Error(String(error));
   }

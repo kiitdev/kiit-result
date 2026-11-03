@@ -33,7 +33,7 @@ class ResultStatusTests : ResultTestSupport {
     fun can_create_success() {
         val status = Succeeded.SUCCESS
         ensureSuccess(Success(42), status, 42)
-        ensureSuccess(Success(42, "created"), status, 42, "created")
+        ensureSuccess(Success(42, Succeeded.DEFAULT), status, 42)
         ensureSuccess(Outcomes.pending(42), Pending.ACCEPTED, 42)
     }
 
@@ -42,9 +42,8 @@ class ResultStatusTests : ResultTestSupport {
         val status = Unserved.UNEXPECTED
         ensureFailure<Int>(Failure("invalid email"), status, expectedError = "invalid email")
         ensureFailure<Int>(
-            Failure("invalid email", "bad data"),
-            status,
-            expectedStatusMsg = "bad data",
+            Failure("invalid email", Invalid.BAD_REQUEST),
+            Invalid.BAD_REQUEST,
             expectedError = "invalid email",
         )
     }
@@ -54,9 +53,8 @@ class ResultStatusTests : ResultTestSupport {
         val status = Unserved.UNEXPECTED
         ensureFailure<Int>(Failure(Err.of("invalid email")), status, expectedError = "invalid email")
         ensureFailure<Int>(
-            Failure(Err.of("invalid email"), "bad data"),
-            status,
-            expectedStatusMsg = "bad data",
+            Failure(Err.of("invalid email"), Invalid.BAD_REQUEST),
+            Invalid.BAD_REQUEST,
             expectedError = "invalid email",
         )
         ensureFailure<Int>(

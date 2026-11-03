@@ -62,8 +62,5 @@ object Options : OptionsBuilder {
     fun <T> none(): Option<T> = Failure(Unit, Rejected.NOT_EXISTS)
 
     @JvmStatic
-    fun <T> none(message: String): Option<T> = Failure(Unit, Status.ofStatus(message, null, Rejected.NOT_EXISTS))
-
-    @JvmStatic
     fun <T> none(status: Failed.Rejected): Option<T> = Failure(Unit, status)
 }

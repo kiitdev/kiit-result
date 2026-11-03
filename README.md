@@ -86,7 +86,7 @@ when (val status = outcome.status) {
 
 ```kotlin
 dependencies {
-    implementation("dev.kiit:kiit-result:1.0.2")
+    implementation("dev.kiit:kiit-result:1.2.0")
 }
 ```
 
@@ -136,7 +136,6 @@ Result<T, E>.action : Action? (optional, both branches)
 | **`Success<T>`** | Holds a `value: T` and a `status: Passed`. Defaults to `Succeeded.SUCCESS`. |
 | **`Failure<E>`** | Holds an `error: E` and a `status: Failed`. Defaults to `Unserved.UNEXPECTED`. |
 | **`Action`** | Optional context for the operation that produced/wrapped a `Result`. Attach via `withAction(action, chain = true)`. |
-| **`message`** | `result.status.message` — a convenience accessor on every `Result`. |
 
 Every `Result` carries a `status` from kiit-codes' own taxonomy, not just `Failure`: `Passed` (`Succeeded`, `Pending`, `Excluded`, `Information`) or `Failed` (`Restricted`, `Invalid`, `Rejected`, `Unserved`). See the [kiit-codes docs](https://www.kiit.dev/docs/kiit-codes#taxonomy) for the full set of groups and codes.
 
@@ -179,7 +178,7 @@ See the [Builders docs](https://www.kiit.dev/docs/kiit-result#builders) for the 
 ## Conversions
 
 - **`toOutcome()`** — converts any `Result<T, E>` to `Outcome<T>` (`Result<T, Err>`), building an `Err` from whatever the failure held (`String`, `Exception`, or an existing `Err`).
-- **`toTry()`** — converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a [kiit-codes](https://github.com/kiitdev/kiit-codes) `StatusException` via `Failed.toException(errors)`, so the exception still carries the original status and error detail.
+- **`toTry()`** — converts any `Result<T, E>` to `Try<T>` (`Result<T, Throwable>`). An `Err`-typed failure becomes a [kiit-codes](https://github.com/kiitdev/kiit-codes) `StatusException` via `Failed.toException(errors = ...)`, so the exception still carries the original status and error detail.
 - **`Tries.of { ... }`** — the reverse direction: if the block throws a `StatusException` (`RestrictedException`/`InvalidException`/`RejectedException`/`UnservedException`), the resulting `Try` is built with the matching `restricted`/`invalid`/`rejected`/`unserved` status instead of a generic failure.
 
 ## Usage
@@ -207,9 +206,8 @@ Current work is focused on the Kotlin release, documentation, examples, and ecos
 
 | # | Topic | Description |
 |---:|---|---|
-| 1 | **npm publish** | Publish pipeline for JS consumers (`@kiit/result`). |
-| 2 | **SPM / XCFramework** | Distribution for Swift consumers — SKIE is already applied for real Swift exhaustiveness (see Start above and `samples/sample-swift`), but the actual `.xcframework` + SPM package, published to `kiit-spm`, is still unbuilt. |
-| 3 | **`Raise<E>`-style DSL** | A flat, non-nested alternative to `.then { }` chaining for multi-step composition (`result { }` + `.bind()`) — needs Kotlin context parameters, experimental as of 2.3.x and reaching Stable in 2.4.0. |
+| 1 | **SPM / XCFramework** | Distribution for Swift consumers — SKIE is already applied for real Swift exhaustiveness (see Start above and `samples/sample-swift`), but the actual `.xcframework` + SPM package, published to `kiit-spm`, is still unbuilt. |
+| 2 | **`Raise<E>`-style DSL** | A flat, non-nested alternative to `.then { }` chaining for multi-step composition (`result { }` + `.bind()`) — needs Kotlin context parameters, experimental as of 2.3.x and reaching Stable in 2.4.0. |
 
 See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current work and discussions.
 
@@ -228,8 +226,9 @@ See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current w
 ## Requirements
 
 - Kotlin Multiplatform
-- JVM, Android, JS (IR), iOS (arm64, simulator arm64, x64)
+- JVM, Android, iOS (arm64, simulator arm64, x64)
 - Depends on `dev.kiit:kiit-codes` (transitively available to consumers via `api`)
+- TypeScript has its own native port, [`@kiitdev/result`](./ports/kiit-result-ts), built on `@kiitdev/codes`. There is no Kotlin/JS target.
 
 ## Contributing
 

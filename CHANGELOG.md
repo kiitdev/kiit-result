@@ -4,6 +4,17 @@ All notable changes to kiit-result are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/), versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-02
+
+### Changed
+- Bumped `kiit-codes` to 1.2.0 and the TypeScript port's `@kiitdev/codes` to `^1.0.0`.
+- Builders default to each group's `DEFAULT` status.
+
+### Removed
+- `Result.message`. Use `result.status.title`.
+- Per-call messages on constructors and builders (`Success(value, message)`, `Failure(error, message)`, `success(value, message)` and the other passed builders, `Options.none(message)`). Pass a `status` instead.
+- The Kotlin/JS target. TypeScript users should use `@kiitdev/result`.
+
 ## [1.0.1] - 2026-08-31
 
 ### Added

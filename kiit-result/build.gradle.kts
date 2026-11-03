@@ -10,10 +10,10 @@ plugins {
     id("signing")
 }
 
-// Single source of truth for the published version. Feeds Maven Central (below), the JS
-// package.json (in the js(IR) block below), and the release workflow's printVersion task, so the
-// git tag, GitHub release, Maven artifact, and npm package version can never get out of sync.
-val libraryVersion = "1.0.2"
+// Single source of truth for the published version. Feeds Maven Central (below) and the release
+// workflow's printVersion task, so the git tag, GitHub release and Maven artifact can never get
+// out of sync. The TypeScript port (ports/kiit-result-ts) is versioned on its own.
+val libraryVersion = "1.2.0"
 
 kotlin {
     jvm {
@@ -33,22 +33,6 @@ kotlin {
         }
     }
 
-    js(IR) {
-        browser()
-        nodejs()
-        binaries.library()
-        generateTypeScriptDefinitions()
-
-        // Sets the npm-facing package identity, mirroring kiit-codes' js(IR) block. The raw
-        // compiled filenames stay "kiit-result-kiit-result.{js,d.ts}", purely internal, since
-        // package.json's "main"/"types" fields already point at them and consumers only ever
-        // interact via `import { kiit } from '@kiit/result'`.
-        compilations["main"].packageJson {
-            name = "@kiit/result"
-            version = libraryVersion
-        }
-    }
-
     listOf(iosArm64(), iosSimulatorArm64(), iosX64()).forEach {
         it.binaries.framework {
             baseName = "KiitResult"
@@ -61,7 +45,7 @@ kotlin {
             // api, not implementation. kiit-result's public API (Result.status, Outcome<T>'s Err
             // type param, etc.) directly exposes kiit-codes types, so consumers need them
             // transitively on their own compile classpath.
-            api("dev.kiit:kiit-codes:1.1.0")
+            api("dev.kiit:kiit-codes:1.2.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

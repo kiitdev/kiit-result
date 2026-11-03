@@ -46,7 +46,7 @@ describe("exists / existsError", () => {
 describe("getOrThrow / getErrorOrThrow", () => {
   it("can get or throw", () => {
     expect(succeed("peter parker").getOrThrow()).toBe("peter parker");
-    expect(() => unserved<string>("name unknown").getOrThrow()).toThrow(Unserved.UNEXPECTED.message);
+    expect(() => unserved<string>("name unknown").getOrThrow()).toThrow(Unserved.UNEXPECTED.title);
   });
 
   it("rethrows an Error error as-is", () => {
@@ -62,14 +62,14 @@ describe("getOrThrow / getErrorOrThrow", () => {
 
   it("builds an Error from a non-Error, non-Err error", () => {
     expect(() => new Failure("boom").getOrThrow()).toThrow("boom");
-    expect(() => new Failure(null, Unserved.UNEXPECTED).getOrThrow()).toThrow(Unserved.UNEXPECTED.message);
+    expect(() => new Failure(null, Unserved.UNEXPECTED).getOrThrow()).toThrow(Unserved.UNEXPECTED.title);
   });
 
   it("can get or throw with a message, keeping the failure as the cause", () => {
     expect(succeed("peter parker").getOrThrow(() => "expected a value")).toBe("peter parker");
     const failure = unserved<string>("name unknown");
     expect(() => failure.getOrThrow(() => "expected a value")).toThrow(
-      `expected a value: ${Unserved.UNEXPECTED.message}`,
+      `expected a value: ${Unserved.UNEXPECTED.title}`,
     );
     try {
       failure.getOrThrow(() => "expected a value");
@@ -131,11 +131,10 @@ describe("map / flatMap / andThen", () => {
     expect(seen).toBe("peter parker : spider-man");
   });
 
-  it("map on a failure keeps the failure, status and message", () => {
+  it("map on a failure keeps the failure and status", () => {
     const result = unserved<string>("name unknown").map((name) => `${name} : spider-man`);
     expect(result.success).toBe(false);
     expect(result.status).toEqual(Unserved.UNEXPECTED);
-    expect(result.message).toBe(Unserved.UNEXPECTED.message);
     expect(result.getOrElse(() => "??")).toBe("??");
   });
 
@@ -194,7 +193,6 @@ describe("transform / fold", () => {
     );
     expect(result.success).toBe(true);
     expect(result.status).toEqual(Succeeded.SUCCESS);
-    expect(result.message).toBe(Succeeded.SUCCESS.message);
     expect(result.getOrNull()).toBe("peter parker : spider-man");
   });
 

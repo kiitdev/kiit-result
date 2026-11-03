@@ -1,5 +1,4 @@
 /** url: www.kiit.dev */
-@file:OptIn(ExperimentalJsExport::class, ExperimentalJsStatic::class)
 
 package kiit.result
 
@@ -10,11 +9,6 @@ import kiit.codes.Status
 import kiit.codes.Succeeded
 import kiit.codes.Unserved
 import kiit.codes.toException
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.ExperimentalJsStatic
-import kotlin.js.JsExport
-import kotlin.js.JsName
-import kotlin.js.JsStatic
 import kotlin.jvm.JvmOverloads
 import kotlin.jvm.JvmStatic
 
@@ -34,7 +28,6 @@ import kotlin.jvm.JvmStatic
  * 2. The failure value is of type E
  * 3. The status is optional to specify explicitly, it's always initialized, defaulting per branch
  */
-@JsExport
 sealed class Result<out T, out E> {
     /**
      * Optional status is defaulted in the [Success] and [Failure]
@@ -52,7 +45,6 @@ sealed class Result<out T, out E> {
      * These are here for convenience both internally and externally
      */
     val success: Boolean get() = this is Success
-    val message: String get() = status.message
 
     /**
      * Applies supplied function `f` if this is a [Success]
@@ -204,7 +196,6 @@ sealed class Result<out T, out E> {
      * Failure("boom").getOrThrow { "expected a value" }  // throws "expected a value: boom"
      * ```
      */
-    @JsName("getOrThrowMessage")
     inline fun getOrThrow(message: () -> Any): T =
         when (this) {
             is Success -> this.value
@@ -240,7 +231,6 @@ sealed class Result<out T, out E> {
      * Success(42).getErrorOrThrow { "expected a failure" }      // throws "expected a failure: 42"
      * ```
      */
-    @JsName("getErrorOrThrowMessage")
     inline fun getErrorOrThrow(message: () -> Any): E =
         when (this) {
             is Success -> error("${message()}: ${this.value}")
@@ -390,8 +380,8 @@ sealed class Result<out T, out E> {
             is Failure -> {
                 when (this.error) {
                     is Exception -> this as Try<T>
-                    is Err -> Failure(this.status.toException(listOf(this.error)), this.status, this.action)
-                    null -> Failure(Exception(this.status.message), this.status, this.action)
+                    is Err -> Failure(this.status.toException(errors = listOf(this.error)), this.status, this.action)
+                    null -> Failure(Exception(this.status.title), this.status, this.action)
                     else -> Failure(Exception(this.error.toString()), this.status, this.action)
                 }
             }
@@ -399,11 +389,9 @@ sealed class Result<out T, out E> {
 
     companion object {
         @JvmStatic
-        @JsStatic
         fun <T> attempt(f: () -> T): Try<T> = Tries.attempt(f)
 
         @JvmStatic
-        @JsStatic
         fun <T> outcome(f: () -> T): Outcome<T> = Outcomes.attempt(f)
     }
 }
@@ -419,13 +407,7 @@ sealed class Result<out T, out E> {
  * generics (`Result<? extends T, ? extends E>`), and `Nothing` as an uninstantiable type
  * parameter. Not a bug, just an unavoidable friction point, documented rather than "solved," same
  * treatment kiit-codes gave its own unfixable interop frictions (typealias erasure, `KtList`).
- *
- * JS/TS note: covariance erases cleanly to plain TS generics. Extension functions (`flatMap`,
- * `getOrElse`, etc., in `ResultOps.kt`) export as flat top-level functions taking the receiver as
- * an explicit first parameter, and the `@JsName`d secondary constructors below become `static`
- * factory methods (`Success.of(42)`, `Success.ofMessage(42, "message")`), not `new Success(42)`.
  */
-@JsExport
 data class Success<out T>
     @JvmOverloads
     constructor(
@@ -439,16 +421,7 @@ data class Success<out T>
          * Initialize using just the value, defaulting to a [Succeeded.SUCCESS] status.
          * @param value : Value representing the success
          */
-        @JsName("of")
         constructor(value: T) : this(value, Succeeded.SUCCESS)
-
-        /**
-         * Initialize using explicitly supplied message
-         * @param value : Value representing the success
-         * @param message : Optional message for the status
-         */
-        @JsName("ofMessage")
-        constructor(value: T, message: String) : this(value, Status.ofStatus(message, null, Succeeded.SUCCESS))
     }
 
 /**
@@ -457,7 +430,6 @@ data class Success<out T>
  * @param error : Error representing the failure
  * @param status : Optional status as [Failed]
  */
-@JsExport
 data class Failure<out E>
     @JvmOverloads
     constructor(
@@ -471,16 +443,7 @@ data class Failure<out E>
          * Initialize using just the error, defaulting to an [Unserved.UNEXPECTED] status.
          * @param error : Error representing the failure
          */
-        @JsName("of")
         constructor(error: E) : this(error, Unserved.UNEXPECTED)
-
-        /**
-         * Initialize using explicitly supplied message
-         * @param error : Error representing the failure
-         * @param message : Optional message for the status
-         */
-        @JsName("ofMessage")
-        constructor(error: E, message: String) : this(error, Status.ofStatus(message, null, Unserved.UNEXPECTED))
 
         /**
          * Maps this [Failure]'s [error]/[status] to a [Throwable], for [getOrThrow]. Rethrows
@@ -492,8 +455,8 @@ data class Failure<out E>
         internal fun toThrowable(): Throwable =
             when (val err = this.error) {
                 is Exception -> err
-                is Err -> this.status.toException(listOf(err))
-                null -> Exception(this.status.message)
+                is Err -> this.status.toException(errors = listOf(err))
+                null -> Exception(this.status.title)
                 else -> Exception(err.toString())
             }
     }

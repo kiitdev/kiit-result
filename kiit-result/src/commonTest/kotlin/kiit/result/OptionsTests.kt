@@ -20,8 +20,7 @@ class OptionsTests {
     @Test
     fun can_build_none() {
         assertEquals(false, Options.none<Int>().success)
-        assertEquals(Rejected.NOT_EXISTS.message, Options.none<Int>().status.message)
-        assertEquals("missing", Options.none<Int>("missing").status.message)
+        assertEquals(Rejected.NOT_EXISTS.title, Options.none<Int>().status.title)
         assertEquals(Rejected.CONFLICT, Options.none<Int>(Rejected.CONFLICT).status)
     }
 }

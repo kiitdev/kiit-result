@@ -42,7 +42,7 @@ jobs:
       - name: Verification checks (lint + tests)
         run: |
           ./gradlew :kiit-result:ktlintCheck :kiit-result:detekt \
-            :kiit-result:jvmTest :kiit-result:jsNodeTest
+            :kiit-result:jvmTest
 
       - name: Import GPG key
         run: |

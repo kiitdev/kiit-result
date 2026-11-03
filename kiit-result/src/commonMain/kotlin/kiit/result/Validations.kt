@@ -15,10 +15,10 @@ import kotlin.jvm.JvmStatic
  */
 interface ValidationBuilder : Builder<Err.ErrorList> {
     override fun errorFromEx(ex: Throwable, defaultStatus: Status): Err.ErrorList =
-        Err.ErrorList(listOf(Err.ex(ex)), ex.message ?: defaultStatus.message)
+        Err.ErrorList(listOf(Err.ex(ex)), ex.message ?: defaultStatus.title)
 
     override fun errorFromStr(message: String?, defaultStatus: Status): Err.ErrorList =
-        Err.ErrorList(listOf(Err.of(message ?: defaultStatus.message)), message ?: defaultStatus.message)
+        Err.ErrorList(listOf(Err.of(message ?: defaultStatus.title)), message ?: defaultStatus.title)
 
     override fun errorFromErr(err: Err, defaultStatus: Status): Err.ErrorList =
         if (err is Err.ErrorList) err else Err.ErrorList(listOf(err), err.message)

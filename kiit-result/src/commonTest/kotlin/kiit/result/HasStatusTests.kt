@@ -8,30 +8,30 @@ import kiit.codes.Unserved
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private val USER_CREATED = Passed.Succeeded(name = "USER_CREATED", message = "User account created", origin = "users")
+private val USER_CREATED = Passed.Succeeded(name = "USER_CREATED", title = "User account created", origin = "users")
 private val QUEUED_FOR_REVIEW =
     Passed.Pending(
         name = "QUEUED_FOR_REVIEW",
-        message = "Flagged for manual review before activation",
+        title = "Flagged for manual review before activation",
         origin = "users",
     )
 
 private val EMAIL_TAKEN =
     Failed.Rejected(
         name = "EMAIL_TAKEN",
-        message = "Email is already registered",
+        title = "Email is already registered",
         origin = "users",
     )
 private val INVALID_EMAIL =
     Failed.Invalid(
         name = "INVALID_EMAIL",
-        message = "Email format is invalid",
+        title = "Email format is invalid",
         origin = "users",
     )
 private val UNAUTHORIZED_CREATE =
     Failed.Restricted(
         name = "UNAUTHORIZED_CREATE",
-        message = "Not authorized to create users",
+        title = "Not authorized to create users",
         origin = "users",
     )
 
@@ -127,11 +127,11 @@ class HasStatusTests {
     }
 }
 
-private val ORDER_PLACED = Passed.Succeeded(name = "ORDER_PLACED", message = "Order placed", origin = "orders")
+private val ORDER_PLACED = Passed.Succeeded(name = "ORDER_PLACED", title = "Order placed", origin = "orders")
 private val ORDER_OUT_OF_STOCK =
     Failed.Rejected(
         name = "ORDER_OUT_OF_STOCK",
-        message = "Item is out of stock",
+        title = "Item is out of stock",
         origin = "orders",
     )
 

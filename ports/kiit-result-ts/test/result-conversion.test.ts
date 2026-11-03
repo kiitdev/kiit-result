@@ -11,14 +11,14 @@ describe("toOutcome", () => {
     const failure: Result<number, string | null> = new Failure<string | null>(null, Restricted.DENIED);
     const retained = failure.toOutcome(true);
     expect(retained.status).toEqual(Restricted.DENIED);
-    expect(retained.getErrorOrNull()?.message).toBe(Restricted.DENIED.message);
+    expect(retained.getErrorOrNull()?.message).toBe(Restricted.DENIED.title);
   });
 
   it("with a null error and a discarded status stays consistent", () => {
     const failure: Result<number, string | null> = new Failure<string | null>(null, Restricted.DENIED);
     const discarded = failure.toOutcome(false);
     expect(discarded.status).toEqual(Unserved.UNEXPECTED);
-    expect(discarded.getErrorOrNull()?.message).toBe(Unserved.UNEXPECTED.message);
+    expect(discarded.getErrorOrNull()?.message).toBe(Unserved.UNEXPECTED.title);
   });
 
   it("with a non-null error is unaffected", () => {
@@ -45,6 +45,6 @@ describe("toTry", () => {
 
   it("builds an Error from a null error using the status message", () => {
     const tried = new Failure(null, Restricted.DENIED).toTry();
-    expect(tried.getErrorOrNull()?.message).toBe(Restricted.DENIED.message);
+    expect(tried.getErrorOrNull()?.message).toBe(Restricted.DENIED.title);
   });
 });
