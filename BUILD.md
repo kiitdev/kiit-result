@@ -2,6 +2,17 @@
 
 All Gradle commands below are run from the **repository root**.
 
+## Contents
+
+1. [Install](#install)
+2. [Setup](#setup)
+3. [CI — GitHub Actions](#ci--github-actions)
+4. [Build](#build)
+5. [Test (local)](#test-local)
+6. [Publish](#publish)
+7. [Publish — npm (`@kiitdev/result`)](#publish--npm-kiitdevresult)
+8. [FAQ](#faq)
+
 ---
 
 ## Install
@@ -13,6 +24,7 @@ All Gradle commands below are run from the **repository root**.
 | JDK  | 17+     | `java -version` to verify |
 | Android SDK | any | Required for `androidTarget` compilation |
 | GPG  | 2.x     | `gpg --version`; must have the dev.kiit secret key imported |
+| Node / npm | 24+ | Needed for `ports/kiit-result-ts`, `scripts/publish-npm.sh`, and `samples/sample-ts` — not for the Kotlin build itself |
 
 Import the signing key if not already present:
 ```bash
@@ -80,12 +92,13 @@ Pass them as `-P` flags because dots in the property names are not valid bash va
 
 ## CI — GitHub Actions
 
-Two workflows live under [`.github/workflows`](.github/workflows):
+Three workflows live under [`.github/workflows`](.github/workflows):
 
 | Workflow | File | Trigger | What it does |
 |----------|------|---------|---------------|
-| CI | `ci.yml` | Every PR into `main` | `ktlintCheck`, `detekt`, `jvmTest` on `ubuntu-latest`. The TypeScript port (`ports/kiit-result-ts`) is not built here; run `npm test` in that folder. iOS tests are not run in CI (no macOS runner). |
+| CI | `ci.yml` | Every PR into `main` | `ktlintCheck`, `detekt`, `jvmTest` for the Kotlin library, plus `typecheck`/`test`/`build` for the TypeScript port (`ports/kiit-result-ts`), on `ubuntu-latest`. iOS tests are not run in CI (no macOS runner). |
 | Release | `release.yml` | Manual (`workflow_dispatch`) | Builds, tests, publishes to Maven Central, tags, and cuts a GitHub release. Runs on `macos-latest` — required to build/sign the iOS targets. |
+| Release npm | `release-npm.yml` | Manual (`workflow_dispatch`) | Builds, tests, publishes `@kiitdev/result` to npm, tags, and cuts a GitHub release. Independent version/cadence from the Kotlin release above. |
 
 CI runners are ephemeral — there is no persistent GPG keyring. The secret key must be imported at the start of every release run.
 
@@ -105,6 +118,12 @@ Encode your secret key for the `KIIT_GPG_SECRET_KEY` secret (run locally):
 ```bash
 gpg --armor --export-secret-keys <your-key-id> | base64 | pbcopy
 ```
+
+`release-npm.yml` needs one additional secret:
+
+| Secret name      | Value |
+|------------------|-------|
+| `KIIT_NPM_TOKEN` | An npm [automation token](https://docs.npmjs.com/creating-and-viewing-access-tokens) with publish access to `@kiitdev/result` |
 
 ### 2. Cutting a release
 
@@ -236,6 +255,42 @@ Requires `~/.gradle/gradle.properties` populated per the Setup section above.
 
 ---
 
+## Publish — npm (`@kiitdev/result`)
+
+Published artifacts: [npmjs.com/package/@kiitdev/result](https://www.npmjs.com/package/@kiitdev/result)
+
+`@kiitdev/result` is published from the native TypeScript port (`ports/kiit-result-ts`), not generated
+from the Kotlin build. It has its own version, tracked in `ports/kiit-result-ts/package.json`,
+independent of the Kotlin library's `libraryVersion`. It depends on `@kiitdev/codes` as a peer
+dependency, so consumers install both.
+
+### Manual, local publish
+
+```bash
+npm login          # one-time, if not already authenticated
+./scripts/publish-npm.sh
+```
+
+The script installs dependencies, runs `typecheck`/`test`/`build`, previews exactly what would be
+published via `npm pack --dry-run`, asks for confirmation, then runs `npm publish --access public`
+from `ports/kiit-result-ts` — the `--access public` flag is required the first time a new scoped
+(`@kiitdev/...`) package is published, since scoped packages default to private on npm otherwise.
+
+### CI, via the Release npm workflow
+
+1. Bump `version` in [`ports/kiit-result-ts/package.json`](ports/kiit-result-ts/package.json) and
+   merge that change to `main`.
+2. From the GitHub Actions tab, run the **Release npm** workflow (`workflow_dispatch`, no inputs).
+3. It reads the version from `package.json`, verifies a tag for that version doesn't already
+   exist, runs typecheck/tests, publishes to npm (`prepublishOnly` also re-runs
+   typecheck/test/build), then pushes tag `npm-v<version>` and creates a GitHub release with
+   auto-generated notes.
+
+A failed publish never leaves behind a tag or a release — tagging and the GitHub release both
+happen only after `npm publish` succeeds.
+
+---
+
 ## FAQ
 
 ### "Cannot perform signing task — has no configured signatory"
@@ -264,8 +319,11 @@ The `mavenCentralUsername` and `mavenCentralPassword` are **portal token** crede
 
 ### How do I bump the version?
 
-Edit the `libraryVersion` val near the top of the `mavenPublishing {}` block in `kiit-result/build.gradle.kts`:
+Edit the `libraryVersion` val near the top of `kiit-result/build.gradle.kts` (above the `kotlin { }` block):
 ```kotlin
-val libraryVersion = "0.1.0"   // ← bump here
+val libraryVersion = "1.2.0"   // ← bump here
 ```
-This single value feeds both the published Maven coordinates and the `printVersion` task the release workflow reads to tag and name the GitHub release — see [CI — GitHub Actions](#ci--github-actions) above.
+This single value feeds both the published Maven coordinates and the `printVersion` task the release workflow reads to tag and name the GitHub release — see [CI — GitHub Actions](#ci--github-actions)
+above. The npm package's version is tracked separately, in
+[`ports/kiit-result-ts/package.json`](ports/kiit-result-ts/package.json) (see the npm publish
+section above).
