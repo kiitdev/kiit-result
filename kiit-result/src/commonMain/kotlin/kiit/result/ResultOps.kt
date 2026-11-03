@@ -1,12 +1,9 @@
 /** url: www.kiit.dev */
 @file:JvmName("Results")
-@file:OptIn(ExperimentalJsExport::class)
 
 package kiit.result
 
 import kiit.codes.Succeeded
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.jvm.JvmName
 
 /*
@@ -35,7 +32,6 @@ import kotlin.jvm.JvmName
  * val r2 = Failure("Unknown").flatMap { Success("???")    }  // Failure("Unknown")
  * ```
  */
-@JsExport
 inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T2, E> = this.then(f)
 
 /**
@@ -49,7 +45,6 @@ inline fun <T1, T2, E> Result<T1, E>.flatMap(f: (T1) -> Result<T2, E>): Result<T
  * val r2 = Failure("Unknown").then { Success("???")    }  // Failure("Unknown")
  * ```
  */
-@JsExport
 inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, E> =
     when (this) {
         is Success -> f(this.value)
@@ -67,7 +62,6 @@ inline fun <T1, T2, E> Result<T1, E>.then(f: (T1) -> Result<T2, E>): Result<T2, 
  * val r2 = Failure("Unknown").or(Success("member"))  // Success("member")
  * ```
  */
-@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
     return when (this) {
@@ -76,7 +70,6 @@ inline fun <T, E> Result<T, E>.or(other: (Result<T, E>)): Result<T, E> {
     }
 }
 
-@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
     when (this) {
@@ -97,7 +90,6 @@ inline fun <T, E> Result<T, E>.and(other: Result<T, E>): Result<T, E> =
  * val r2 = Failure("timeout").orElse { Success("recovered") }  // Success("recovered")
  * ```
  */
-@JsExport
 inline fun <T, E, E2> Result<T, E>.orElse(f: (E) -> Result<T, E2>): Result<T, E2> =
     when (this) {
         is Success -> this
@@ -118,7 +110,6 @@ inline fun <T, E, E2> Result<T, E>.orElse(f: (E) -> Result<T, E2>): Result<T, E2
  * Failure("Unknown").recover { "fallback" }  // Success("fallback")
  * ```
  */
-@JsExport
 inline fun <T, E> Result<T, E>.recover(transform: (E) -> T): Result<T, Nothing> =
     when (this) {
         is Success -> this
@@ -134,7 +125,6 @@ inline fun <T, E> Result<T, E>.recover(transform: (E) -> T): Result<T, Nothing> 
  * Failure("Unknown").getOrElse { it }          // "Unknown"
  * ```
  */
-@JsExport
 inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
     when (this) {
         is Success -> this.value
@@ -151,7 +141,6 @@ inline fun <T, E> Result<T, E>.getOrElse(f: (E) -> T): T =
  * Failure("Unknown").getOr("fallback")  // "fallback"
  * ```
  */
-@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<T, E>.getOr(default: T): T =
     when (this) {
@@ -174,7 +163,6 @@ inline fun <T, E> Result<T, E>.getOr(default: T): T =
  * bad.getOrRethrow() // throws the original IllegalStateException("boom")
  * ```
  */
-@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
     when (this) {
@@ -190,6 +178,5 @@ inline fun <T, E : Throwable> Result<T, E>.getOrRethrow(): T =
  * val r1 = Success(Success("guest")).flatten() // Success("guest")
  * ```
  */
-@JsExport
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T, E> Result<Result<T, E>, E>.flatten(): Result<T, E> = this.fold({ it }, { Failure(it) })

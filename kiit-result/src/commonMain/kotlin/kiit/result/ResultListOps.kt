@@ -1,12 +1,9 @@
 /** url: www.kiit.dev */
 @file:JvmName("ResultLists")
-@file:OptIn(ExperimentalJsExport::class)
 
 package kiit.result
 
 import kiit.codes.Succeeded
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.jvm.JvmName
 
 /*
@@ -30,7 +27,6 @@ import kotlin.jvm.JvmName
  * listOf(Success(1), Failure("boom"), Success(3)).combine() // Failure("boom")
  * ```
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.combine(): Result<List<T>, E> {
     val values = ArrayList<T>(this.size)
     for (result in this) {
@@ -51,7 +47,6 @@ fun <T, E> List<Result<T, E>>.combine(): Result<List<T>, E> {
  * listOf(Success(1), Failure("boom"), Success(3)).partition()  // ([1, 3], ["boom"])
  * ```
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.partition(): Pair<List<T>, List<E>> {
     val values = ArrayList<T>()
     val errors = ArrayList<E>()
@@ -67,23 +62,19 @@ fun <T, E> List<Result<T, E>>.partition(): Pair<List<T>, List<E>> {
 /**
  * Returns true if every item in this list is a [Success].
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.allSuccess(): Boolean = this.all { it.success }
 
 /**
  * Returns true if every item in this list is a [Failure].
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.allFailure(): Boolean = this.none { it.success }
 
 /**
  * Returns true if at least one item in this list is a [Success].
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.anySuccess(): Boolean = this.any { it.success }
 
 /**
  * Returns true if at least one item in this list is a [Failure].
  */
-@JsExport
 fun <T, E> List<Result<T, E>>.anyFailure(): Boolean = this.any { !it.success }

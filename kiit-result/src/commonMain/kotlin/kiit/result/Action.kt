@@ -1,10 +1,7 @@
 /** url: www.kiit.dev */
-@file:OptIn(ExperimentalJsExport::class)
 
 package kiit.result
 
-import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -18,7 +15,6 @@ import kotlin.jvm.JvmOverloads
  * @param data : Optional free-form attributes for this operation
  * @param previous : Optional link to the [Action] this one was chained from, see [Result.withAction]
  */
-@JsExport
 data class Action
     @JvmOverloads
     constructor(
