@@ -206,9 +206,8 @@ Current work is focused on the Kotlin release, documentation, examples, and ecos
 
 | # | Topic | Description |
 |---:|---|---|
-| 1 | **npm publish** | Publish pipeline for JS consumers (`@kiit/result`). |
-| 2 | **SPM / XCFramework** | Distribution for Swift consumers — SKIE is already applied for real Swift exhaustiveness (see Start above and `samples/sample-swift`), but the actual `.xcframework` + SPM package, published to `kiit-spm`, is still unbuilt. |
-| 3 | **`Raise<E>`-style DSL** | A flat, non-nested alternative to `.then { }` chaining for multi-step composition (`result { }` + `.bind()`) — needs Kotlin context parameters, experimental as of 2.3.x and reaching Stable in 2.4.0. |
+| 1 | **SPM / XCFramework** | Distribution for Swift consumers — SKIE is already applied for real Swift exhaustiveness (see Start above and `samples/sample-swift`), but the actual `.xcframework` + SPM package, published to `kiit-spm`, is still unbuilt. |
+| 2 | **`Raise<E>`-style DSL** | A flat, non-nested alternative to `.then { }` chaining for multi-step composition (`result { }` + `.bind()`) — needs Kotlin context parameters, experimental as of 2.3.x and reaching Stable in 2.4.0. |
 
 See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current work and discussions.
 
@@ -227,8 +226,9 @@ See [GitHub Issues](https://github.com/kiitdev/kiit-result/issues) for current w
 ## Requirements
 
 - Kotlin Multiplatform
-- JVM, Android, JS (IR), iOS (arm64, simulator arm64, x64)
+- JVM, Android, iOS (arm64, simulator arm64, x64)
 - Depends on `dev.kiit:kiit-codes` (transitively available to consumers via `api`)
+- TypeScript has its own native port, [`@kiitdev/result`](./ports/kiit-result-ts), built on `@kiitdev/codes`. There is no Kotlin/JS target.
 
 ## Contributing
 
