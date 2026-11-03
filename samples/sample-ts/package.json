@@ -13,7 +13,7 @@
     "@types/node": "24.13.4"
   },
   "dependencies": {
-    "@kiitdev/codes": "file:../../../kiit-codes/ports/kiit-codes-ts",
+    "@kiitdev/codes": "^1.0.0",
     "@kiitdev/result": "file:../../ports/kiit-result-ts"
   }
 }

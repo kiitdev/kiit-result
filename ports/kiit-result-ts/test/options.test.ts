@@ -17,7 +17,7 @@ describe("Options", () => {
   it("builds none with NOT_EXISTS by default", () => {
     const none = Options.none();
     expect(none.success).toBe(false);
-    expect(none.status.message).toBe(Rejected.NOT_EXISTS.message);
+    expect(none.status.title).toBe(Rejected.NOT_EXISTS.title);
     expect(none.getErrorOrNull()).toBeUndefined();
   });
 

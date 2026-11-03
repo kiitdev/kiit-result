@@ -60,7 +60,7 @@ describe.each([
   const call = build as (a?: unknown, b?: unknown) => ReturnType<typeof Outcomes.invalid>;
 
   it("defaults to the group's default status and message", () => {
-    ensureFailure(call(), defaultStatus, defaultStatus.message);
+    ensureFailure(call(), defaultStatus, defaultStatus.title);
   });
 
   it("uses a message as the error message", () => {
@@ -79,7 +79,7 @@ describe.each([
   });
 
   it("takes a status alone, with the status message as the error", () => {
-    ensureFailure(call({ status: otherStatus }), otherStatus, otherStatus.message);
+    ensureFailure(call({ status: otherStatus }), otherStatus, otherStatus.title);
   });
 
   it("takes a message and a status", () => {
@@ -126,12 +126,12 @@ describe("of / ofIf", () => {
 
   it("ofIf needs the condition and a value", () => {
     ensureSuccess(Outcomes.ofIf(true, 42), Succeeded.SUCCESS, 42);
-    ensureFailure(Outcomes.ofIf(false, 42), Unserved.UNEXPECTED, Unserved.UNEXPECTED.message);
-    ensureFailure(Outcomes.ofIf(true, null), Unserved.UNEXPECTED, Unserved.UNEXPECTED.message);
+    ensureFailure(Outcomes.ofIf(false, 42), Unserved.UNEXPECTED, Unserved.UNEXPECTED.title);
+    ensureFailure(Outcomes.ofIf(true, null), Unserved.UNEXPECTED, Unserved.UNEXPECTED.title);
   });
 
   it("ofIf takes the success and failure statuses", () => {
     ensureSuccess(Outcomes.ofIf(true, 1, { success: Succeeded.CREATED }), Succeeded.CREATED, 1);
-    ensureFailure(Outcomes.ofIf(false, 1, { failure: Unserved.TIMEOUT }), Unserved.TIMEOUT, Unserved.TIMEOUT.message);
+    ensureFailure(Outcomes.ofIf(false, 1, { failure: Unserved.TIMEOUT }), Unserved.TIMEOUT, Unserved.TIMEOUT.title);
   });
 });

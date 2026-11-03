@@ -6,8 +6,8 @@ import { createBuilder } from "./builders/builder.js";
 import type { ErrorMapper } from "./builders/builder.js";
 
 const mapper: ErrorMapper<ErrorList> = {
-  fromError: (error, status) => ErrorList([Err.ex(error)], error.message || status.message),
-  fromMessage: (message, status) => ErrorList([Err.of(message ?? status.message)], message ?? status.message),
+  fromError: (error, status) => ErrorList([Err.ex(error)], error.message || status.title),
+  fromMessage: (message, status) => ErrorList([Err.of(message ?? status.title)], message ?? status.title),
   fromErr: (err) => (err.kind === "ErrorList" ? err : ErrorList([err], err.message)),
 };
 

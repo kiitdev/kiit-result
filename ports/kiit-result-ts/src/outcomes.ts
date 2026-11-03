@@ -7,7 +7,7 @@ import type { ErrorMapper } from "./builders/builder.js";
 
 const mapper: ErrorMapper<Err> = {
   fromError: (error) => Err.ex(error),
-  fromMessage: (message, status) => Err.of(message ?? status.message),
+  fromMessage: (message, status) => Err.of(message ?? status.title),
   fromErr: (err) => err,
 };
 

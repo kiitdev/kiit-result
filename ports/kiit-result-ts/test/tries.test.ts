@@ -56,6 +56,6 @@ describe("Tries.attempt", () => {
 describe("Tries builders", () => {
   it("build an Error from a message or an Err", () => {
     expect(Tries.invalid("bad").getErrorOrNull()?.message).toBe("bad");
-    expect(Tries.invalid().getErrorOrNull()?.message).toBe(Invalid.INVALID_VALUE.message);
+    expect(Tries.invalid().getErrorOrNull()?.message).toBe(Invalid.INVALID_VALUE.title);
   });
 });
