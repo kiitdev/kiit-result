@@ -13,7 +13,7 @@ plugins {
 // Single source of truth for the published version. Feeds Maven Central (below) and the release
 // workflow's printVersion task, so the git tag, GitHub release and Maven artifact can never get
 // out of sync. The TypeScript port (ports/kiit-result-ts) is versioned on its own.
-val libraryVersion = "1.0.2"
+val libraryVersion = "1.2.0"
 
 kotlin {
     jvm {

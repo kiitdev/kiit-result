@@ -1,6 +1,6 @@
 {
   "name": "@kiitdev/result",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Result<T, E> with a kiit-codes Status on both the success and failure branches",
   "keywords": [
     "result",

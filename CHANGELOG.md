@@ -4,7 +4,7 @@ All notable changes to kiit-result are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/), versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.2.0] - 2026-11-02
 
 ### Changed
 - Bumped `kiit-codes` to 1.2.0 and the TypeScript port's `@kiitdev/codes` to `^1.0.0`.
