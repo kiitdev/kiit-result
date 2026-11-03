@@ -131,11 +131,10 @@ describe("map / flatMap / andThen", () => {
     expect(seen).toBe("peter parker : spider-man");
   });
 
-  it("map on a failure keeps the failure, status and message", () => {
+  it("map on a failure keeps the failure and status", () => {
     const result = unserved<string>("name unknown").map((name) => `${name} : spider-man`);
     expect(result.success).toBe(false);
     expect(result.status).toEqual(Unserved.UNEXPECTED);
-    expect(result.message).toBe(Unserved.UNEXPECTED.title);
     expect(result.getOrElse(() => "??")).toBe("??");
   });
 
@@ -194,7 +193,6 @@ describe("transform / fold", () => {
     );
     expect(result.success).toBe(true);
     expect(result.status).toEqual(Succeeded.SUCCESS);
-    expect(result.message).toBe(Succeeded.SUCCESS.title);
     expect(result.getOrNull()).toBe("peter parker : spider-man");
   });
 

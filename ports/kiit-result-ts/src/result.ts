@@ -39,11 +39,6 @@ export abstract class ResultBase<out T, out E> {
   abstract readonly status: Status;
   abstract readonly action?: Action;
 
-  /** The status' message. */
-  get message(): string {
-    return this.status.title;
-  }
-
   /** Applies `f` to the value if this is a `Success`. Keeps status and action. */
   abstract map<T2>(f: (value: T) => T2): Result<T2, E>;
 

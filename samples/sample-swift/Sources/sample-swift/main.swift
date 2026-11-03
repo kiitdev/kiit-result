@@ -11,16 +11,11 @@ func check(_ condition: Bool, _ label: String) {
 }
 
 // Generics require AnyObject (Swift Int/String are value types), so use boxed KotlinInt/NSString.
-// Multiple constructors bridge as distinct real initializers, no collision.
 let bare = Success(value: KotlinInt(value: 42))
-let withMessage = Success(value: KotlinInt(value: 42), message: "created via convenience overload")
 check(bare.value?.intValue == 42, "Success(value:).value")
-check(withMessage.status.message == "created via convenience overload", "Success(value:message:).status.message")
 
 let failBare = Failure(error: "boom" as NSString)
-let failMessage = Failure(error: "boom" as NSString, message: "custom failure reason")
 check(failBare.error! == "boom", "Failure(error:).error")
-check(failMessage.status.message == "custom failure reason", "Failure(error:message:).status.message")
 
 // Flat, compiler-enforced exhaustive switch (Success/Failure is single-level, unlike kiit-codes'
 // nested Status hierarchy). Generic over <T, E> since Success/Failure don't widen to a shared
@@ -56,6 +51,7 @@ func describeStatus(_ status: Kiit_codesStatus) -> String {
     }
 }
 check(describeStatus(bare.status) == "Succeeded: SUCCESS", "describeStatus(bare.status)")
+check(describeStatus(failBare.status) == "Unserved: UNEXPECTED", "describeStatus(failBare.status)")
 
 // Plain objects get clean `.shared` access out of the box, no proxy functions needed, unlike JS.
 let attempted = Outcomes.shared.attempt { KotlinInt(value: 100) }
