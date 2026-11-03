@@ -46,5 +46,6 @@ interface PassedBuilder<out E> {
     fun <T> information(): Result<T?, E> = Success(null, status = Information.DEFAULT)
 
     @JsName("informationStatus")
-    fun <T> information(value: T, status: Passed.Information = Information.DEFAULT): Result<T, E> = Success(value, status)
+    fun <T> information(value: T, status: Passed.Information = Information.DEFAULT): Result<T, E> =
+        Success(value, status)
 }

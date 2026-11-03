@@ -10,9 +10,9 @@ plugins {
     id("signing")
 }
 
-// Single source of truth for the published version. Feeds Maven Central (below), the JS
-// package.json (in the js(IR) block below), and the release workflow's printVersion task, so the
-// git tag, GitHub release, Maven artifact, and npm package version can never get out of sync.
+// Single source of truth for the published version. Feeds Maven Central (below) and the release
+// workflow's printVersion task, so the git tag, GitHub release and Maven artifact can never get
+// out of sync. The TypeScript port (ports/kiit-result-ts) is versioned on its own.
 val libraryVersion = "1.0.2"
 
 kotlin {
@@ -30,22 +30,6 @@ kotlin {
         publishLibraryVariants("release")
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
-    }
-
-    js(IR) {
-        browser()
-        nodejs()
-        binaries.library()
-        generateTypeScriptDefinitions()
-
-        // Sets the npm-facing package identity, mirroring kiit-codes' js(IR) block. The raw
-        // compiled filenames stay "kiit-result-kiit-result.{js,d.ts}", purely internal, since
-        // package.json's "main"/"types" fields already point at them and consumers only ever
-        // interact via `import { kiit } from '@kiit/result'`.
-        compilations["main"].packageJson {
-            name = "@kiit/result"
-            version = libraryVersion
         }
     }
 

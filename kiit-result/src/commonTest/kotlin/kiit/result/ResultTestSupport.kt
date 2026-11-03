@@ -12,11 +12,7 @@ interface ResultTestSupport {
      * Asserts [result] is a [Success] holding [expectedValue], with a status matching
      * [expectedStatus].
      */
-    fun <T> ensureSuccess(
-        result: Result<T, Err>,
-        expectedStatus: Status,
-        expectedValue: T
-    ) {
+    fun <T> ensureSuccess(result: Result<T, Err>, expectedStatus: Status, expectedValue: T) {
         assertEquals(true, result.success)
         assertEquals(expectedStatus, result.status)
 
@@ -29,11 +25,7 @@ interface ResultTestSupport {
      * Asserts [result] is a [Failure] with a status matching [expectedStatus], and an error value matching
      * [expectedError], either directly (`String`) or via [Err.ErrorInfo.message].
      */
-    fun <T> ensureFailure(
-        result: Result<T, *>,
-        expectedStatus: Status,
-        expectedError: String? = null
-    ) {
+    fun <T> ensureFailure(result: Result<T, *>, expectedStatus: Status, expectedError: String? = null) {
         assertEquals(false, result.success)
         assertEquals(expectedStatus, result.status)
         result.onFailure {

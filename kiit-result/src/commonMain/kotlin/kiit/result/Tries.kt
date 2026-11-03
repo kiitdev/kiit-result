@@ -3,12 +3,8 @@
 package kiit.result
 
 import kiit.codes.Err
-import kiit.codes.Invalid
-import kiit.codes.Rejected
-import kiit.codes.Restricted
 import kiit.codes.Status
 import kiit.codes.StatusException
-import kiit.codes.Unserved
 import kiit.result.builders.Builder
 import kotlin.jvm.JvmStatic
 
